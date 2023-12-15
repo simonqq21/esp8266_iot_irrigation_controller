@@ -1,4 +1,16 @@
 #include <Arduino.h>
+#include <ArduinoJson.h>
+#include <ESP8266WiFi.h> 
+#include <ESPAsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+#include <LittleFS.h> 
+
+// wifi credentials
+#define LOCAL_SSID "QUE-STARLINK"
+#define LOCAL_PASS "password"
+
+//for littlefs
+File indexPage;  
 
 // put function declarations here:
 int myFunction(int, int);

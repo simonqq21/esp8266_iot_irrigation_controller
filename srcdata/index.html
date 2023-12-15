@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>ESP8266 IoT Irrigation Controller Web Interface</title>
+    <style>
+        * {
+            font-family: Arial, serif;
+        }
+        #irrigationStatusDiv {
+            display: block;
+            align-content: center;
+            justify-content: center;
+        }
+        #irrigationStatusDiv > * {
+            display: inline-block;
+        }
+        #irrigationStatusIndicator {
+            width: 5vh; 
+            height: 5vh;
+            min-width: 50px;
+            min-height: 50px;
+            border-radius: 50%;
+            background-color: red;
+        }
+        .irrigationScheduleRow {
+            display: flex; 
+
+        }
+    </style>
+    <script type="text/javascript" src="jquery-3.7.1.min.js"></script>
+    <script type="text/javascript" src="s.js"></script>
+</head>
+<body>
+    <header>
+        <h1>ESP8266 IoT Irrigation Controller Web Interface</h1>
+    </header>
+    <div id="irrigationStatusDiv">
+        <p>Irrigation status: </p>
+        <div id="irrigationStatusIndicator"></div>
+    </div>
+    <div id="irrigationScheduleDiv">
+        <h2>Daily watering schedule:</h2>
+        <div class="irrigationScheduleRow">
+            <button>0</button>
+            <button>1</button>
+            <button>2</button>
+            <button>3</button>
+            <button>4</button>
+            <button>5</button>
+            <button>6</button>
+            <button>7</button>
+            <button>8</button>
+            <button>9</button>
+            <button>10</button>
+            <button>11</button>
+        </div>
+        <div class="irrigationScheduleRow">
+            <button>12</button>
+            <button>13</button>
+            <button>14</button>
+            <button>15</button>
+            <button>16</button>
+            <button>17</button>
+            <button>18</button>
+            <button>19</button>
+            <button>20</button>
+            <button>21</button>
+            <button>22</button>
+            <button>23</button>
+        </div>
+    </div>
+    <div if="intervalDurationDiv">
+        <h2>Watering interval duration: </h2>
+        <input type="range" id="intervalDuration" name="intervalDuration" class="range1" min="1" max="60" step="1" oninput="$('#intervalDurationDisplay').text($('#intervalDuration').val())">
+        <p id="intervalDurationDisplay">0</p>
+    </div>
+</body>
+</html>
