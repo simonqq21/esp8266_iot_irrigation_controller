@@ -70,10 +70,14 @@
             <button>23</button>
         </div>
     </div>
-    <div if="intervalDurationDiv">
+    <div id="intervalDurationDiv">
         <h2>Watering interval duration: </h2>
         <input type="range" id="intervalDuration" name="intervalDuration" class="range1" min="1" max="60" step="1" oninput="$('#intervalDurationDisplay').text($('#intervalDuration').val())">
         <p id="intervalDurationDisplay">0</p>
+    </div>
+    <div id="saveButtonDiv">
+        <button>Save</button>
+        <button>Activate pump</button>
     </div>
 </body>
 </html>

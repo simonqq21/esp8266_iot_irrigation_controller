@@ -4,6 +4,12 @@
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <LittleFS.h> 
+#include <EEPROM.h>
+
+// pins 
+#define RELAY_PIN // 
+#define BUTTON_PIN //  
+#define LED_PIN //
 
 // wifi credentials
 #define LOCAL_SSID "QUE-STARLINK"
