@@ -6,6 +6,7 @@
 #include <LittleFS.h> 
 #include <EEPROM.h>
 #include <RTClib.h>
+#include <SPI.h> 
 
 // pins 
 #define RELAY_PIN 14 // D5 
@@ -71,9 +72,9 @@ IPAddress subnet(255,255,255,0);
 //for littlefs
 File indexPage;  
 
-void printWifi(); 
-void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type,
-  void *arg, uint8_t *data, size_t len);
+void printWiFi(); 
+void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
+  type, void *arg, uint8_t *data, size_t len);
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len);
 void initWebSocket();
 
@@ -106,8 +107,8 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
+  
 }
-
 
 
 void printWiFi() {
