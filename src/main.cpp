@@ -184,5 +184,31 @@ void initWebSocket() {
   server.addHandler(&ws);
 }
 
-/*
-JSON format: */
+/* JSON formats: 
+ - browser request status update from MCU 
+{
+  'type': 'status' (str)
+}
+ - sending relay status from MCU to browser: 
+{
+  'type': 'status', (str)
+  'relay_status': true  (bool)
+}
+ - sending current settings from MCU to browser:
+{
+  'type': 'config', (str)
+  'hours': {}, (array of 3 integers representing the three bytes stored in EEPROM)
+  'duration': 10 (int)
+}
+ - sending updated settings from browser to MCU:
+{
+  'type': 'update_config', (str)
+  'hours': {}, (array of 3 integers representing the three bytes stored in EEPROM)
+  'duration': 10 (int)
+}
+ - send command from browser to enable the relay:
+{
+  'type': 'control',
+  'relay_status': true (bool)
+}
+*/
