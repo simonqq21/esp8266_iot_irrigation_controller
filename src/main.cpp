@@ -23,7 +23,7 @@ int duration = 0;
   will be arranged as below:
 
   address |       00                    01                       02
-  hours   |7 6 5 4 3 2 1 0 | 15 14 13 12 11 10 9 8 | 23 22 21 20 19 18 17 16
+  hours   | 7 6 5 4 3 2 1 0 | 15 14 13 12 11 10 9 8 | 23 22 21 20 19 18 17 16
   
   so if a bit is high, the relay will close contacts for the set duration at the start
   of that hour before opening contacts for the rest of the hour, but if that bit is 
@@ -56,7 +56,7 @@ AsyncWebServer server(80);
 AsyncWebSocket ws("/ws"); 
 StaticJsonDocument<100> inputDoc;
 StaticJsonDocument<100> outputDoc;
-char strData[140];
+char strData[100];
 
 // wifi credentials
 #define LOCAL_SSID "QUE-STARLINK"
@@ -67,21 +67,122 @@ IPAddress gateway(192,168,5,1);
 IPAddress subnet(255,255,255,0);
 //IPAddress primaryDNS(8,8,8,8);
 //IPAddress secondaryDNS(8,8,4,4);
-#define APMODE true
 
 //for littlefs
 File indexPage;  
 
+void printWifi(); 
+void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type,
+  void *arg, uint8_t *data, size_t len);
+void handleWebSocketMessage(void *arg, uint8_t *data, size_t len);
+void initWebSocket();
+
 void setup() {
+  Serial.begin(115200); 
+  // littleFS 
+  if (!LittleFS.begin()) {
+    Serial.println("An error occured while mounting LittleFS.");
+  }
 
+  pinMode(RELAY_PIN, OUTPUT);
+  pinMode(LED_PIN, OUTPUT);
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
 
+  Serial.print("Connecting to "); 
+  Serial.println(LOCAL_SSID);
+  if (!WiFi.config(local_IP, gateway, subnet)) {
+    Serial.println("Station failed to configure.");
+  }
+  WiFi.begin(LOCAL_SSID, LOCAL_PASS); 
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500); 
+    Serial.print(".");
+  }
+  //  print local IP address and start web server 
+  printWiFi();
+  // initialize websocket 
+  initWebSocket(); 
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
 }
 
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+
+
+void printWiFi() {
+  Serial.println(" ");
+  Serial.println("WiFi connected.");
+  Serial.print("WiFi SSID: ");
+  Serial.println(WiFi.SSID());
+  Serial.print("IP address: "); 
+  Serial.println(WiFi.localIP()); 
+  long rssi = WiFi.RSSI(); 
+  Serial.print("Signal strength (RSSI): "); 
+  Serial.print(rssi);
+  Serial.println(" dBm");
 }
+
+// run everytime new data is received from the websocket
+void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type,
+             void *arg, uint8_t *data, size_t len) {
+    switch (type) {
+      case WS_EVT_CONNECT:
+        Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
+        break;
+      case WS_EVT_DISCONNECT:
+        Serial.printf("WebSocket client #%u disconnected\n", client->id());
+        break;
+      case WS_EVT_DATA:
+        handleWebSocketMessage(arg, data, len);
+        break;
+      case WS_EVT_PONG:
+      case WS_EVT_ERROR:
+        break;
+  }
+}
+
+// function that receives all JSON data from the controlling device
+void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
+  AwsFrameInfo *info = (AwsFrameInfo*)arg;
+  if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
+    data[len] = 0;
+    
+    //    deserialize the JSON into a JSON object
+    DeserializationError error = deserializeJson(inputDoc, (char*)data); 
+    Serial.println((char*)data);
+    if (error) {
+      Serial.print("deserializeJson failed: ");
+      Serial.println(error.f_str());
+    }
+    else 
+      Serial.println("deserializeJson success");
+      
+    // String commandType = inputDoc["type"];
+    // //    send status JSON
+    // if (commandType == "status") {
+    //   sendStatusUpdate();
+    // }
+    // //  update motor power values
+    // else if (commandType == "motors") {
+    //   controlMotors();
+    // }
+    // //  update headlight values
+    // else if (commandType == "lights") {
+    //   controlLights();
+    // }
+    // //  update beeper values
+    // else if (commandType == "beep") {
+    //   controlBeep();
+    // }
+  }
+}
+
+// initialize the websocket 
+void initWebSocket() {
+  ws.onEvent(onEvent);
+  server.addHandler(&ws);
+}
+
+/*
+JSON format: */
