@@ -16,6 +16,7 @@
 // status variables 
 byte hourBits[3];
 int duration = 0;
+bool relayClosed = false; 
 
 // configuration variables 
 /*  The configuration variables are the ff:
@@ -29,9 +30,6 @@ int duration = 0;
   so if a bit is high, the relay will close contacts for the set duration at the start
   of that hour before opening contacts for the rest of the hour, but if that bit is 
   low, then the relay will remain open contact for that hour.
-
-  - a single integer used to store the number of seconds the relay will be closed 
-  at the start of every hour the irrigation is set.
 
   eg. if the relay must close at 7AM and remain open the rest of the time,
   7 / 8 = 0, byte 0.  0000 0111 >> 3 = 0
@@ -77,9 +75,23 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType
   type, void *arg, uint8_t *data, size_t len);
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len);
 void initWebSocket();
+void readConfig(byte* hours, int* duration); // read configuration data from the 
+// EEPROM
+void writeConfig(byte* hours, int duration); // write configuration data to the 
+// EEPROM
+bool checkTimeIfClosed(int hour, int minute); // check the time if the relay will
+// be closed
+void closeRelay(int pin, int seconds);
+
+
 
 void setup() {
   Serial.begin(115200); 
+
+  // initialize EEPROM emulation
+  EEPROM.begin(10); 
+  
+
   // littleFS 
   if (!LittleFS.begin()) {
     Serial.println("An error occured while mounting LittleFS.");
@@ -103,6 +115,8 @@ void setup() {
   printWiFi();
   // initialize websocket 
   initWebSocket(); 
+
+  
 }
 
 void loop() {
@@ -159,23 +173,12 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
     else 
       Serial.println("deserializeJson success");
       
-    // String commandType = inputDoc["type"];
+    String commandType = inputDoc["type"];
     // //    send status JSON
-    // if (commandType == "status") {
-    //   sendStatusUpdate();
-    // }
-    // //  update motor power values
-    // else if (commandType == "motors") {
-    //   controlMotors();
-    // }
-    // //  update headlight values
-    // else if (commandType == "lights") {
-    //   controlLights();
-    // }
-    // //  update beeper values
-    // else if (commandType == "beep") {
-    //   controlBeep();
-    // }
+    if (commandType == "status") {
+      // sendStatusUpdate();
+    }
+
   }
 }
 
