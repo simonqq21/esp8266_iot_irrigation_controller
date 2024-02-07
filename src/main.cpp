@@ -81,7 +81,7 @@ void writeConfig(byte* hours, int duration); // write configuration data to the
 // EEPROM
 bool checkTimeIfClosed(int hour, int minute); // check the time if the relay will
 // be closed
-void closeRelay(int pin, int seconds);
+void closeRelay(int pin, int seconds); // 
 
 
 
