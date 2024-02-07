@@ -7,6 +7,9 @@
 #include <EEPROM.h>
 #include <RTClib.h>
 #include <SPI.h> 
+#include <NTPClient.h> 
+#include <WiFiUdp.h>
+#include <TimeLib.h>
 
 // pins 
 #define RELAY_PIN 14 // D5 
@@ -17,6 +20,26 @@
 byte hourBits[3];
 int duration = 0;
 bool relayClosed = false; 
+
+// RTC 
+RTC_DS1307 rtc; 
+DateTime dtnow; 
+
+// NTP server 
+const long UTCOffsetInSeconds = 28800;
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, "ntp.pagasa.dost.gov.ph"); 
+
+// // string array of days of the week
+// String daysOfTheWeek[7] = {
+//   "Monday", 
+//   "Tuesday", 
+//   "Wednesday",
+//   "Thursday",
+//   "Friday",
+//   "Saturday", 
+//   "Sunday"
+// };
 
 // configuration variables 
 /*  The configuration variables are the ff:
@@ -49,6 +72,35 @@ bool relayClosed = false;
   TLDR: To switch a bit on, use bitwise or with a left shift, to switch a bit off, 
   use bitwise and with the inverse of a left shift. */
 
+/* JSON formats: 
+ - browser request status update from MCU 
+{
+  'type': 'status' (str)
+}
+ - sending relay status from MCU to browser: 
+{
+  'type': 'status', (str)
+  'relay_status': true  (bool)
+}
+ - sending current settings from MCU to browser:
+{
+  'type': 'config', (str)
+  'hours': {}, (array of 3 integers representing the three bytes stored in EEPROM)
+  'duration': 10 (int)
+}
+ - sending updated settings from browser to MCU:
+{
+  'type': 'update_config', (str)
+  'hours': {}, (array of 3 integers representing the three bytes stored in EEPROM)
+  'duration': 10 (int)
+}
+ - send command from browser to enable the relay:
+{
+  'type': 'control',
+  'relay_status': true (bool)
+}
+*/
+
 
 // async web server
 AsyncWebServer server(80); 
@@ -58,8 +110,10 @@ StaticJsonDocument<100> outputDoc;
 char strData[100];
 
 // wifi credentials
-#define LOCAL_SSID "QUE-STARLINK"
+#define LOCAL_SSID "wifi"
 #define LOCAL_PASS "password"
+
+
 //static IP address configuration 
 IPAddress local_IP(192,168,5,75);
 IPAddress gateway(192,168,5,1);
@@ -75,13 +129,22 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType
   type, void *arg, uint8_t *data, size_t len);
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len);
 void initWebSocket();
-void readConfig(byte* hours, int* duration); // read configuration data from the 
-// EEPROM
-void writeConfig(byte* hours, int duration); // write configuration data to the 
-// EEPROM
-bool checkTimeIfClosed(int hour, int minute); // check the time if the relay will
-// be closed
-void closeRelay(int pin, int seconds); // 
+void printTime(int year, int month, int day, int hour, int minute, int second);
+void printRTCTime(DateTime datetime); 
+void printNTPTime(NTPClient timeClient);
+void updateNTPTime();
+void adjustRTCWithNTP(NTPClient timeClient, RTC_DS1307 rtc);
+
+
+
+// void printTimingConfig(timingconfig tC);
+// void loadFromEEPROM(unsigned int addr, timingconfig* tC);
+// void saveToEEPROM(unsigned int addr, timingconfig tC);
+// bool checkHour(timingconfig tC, int hour);
+// bool* getActiveHours(timingconfig tC);
+// void setHour(timingconfig* tC, int hour, bool newState); 
+// void clearAllHours(timingconfig* tC); 
+// void setDuration(timingconfig* tC, int newDuration);
 
 
 
@@ -91,7 +154,6 @@ void setup() {
   // initialize EEPROM emulation
   EEPROM.begin(10); 
   
-
   // littleFS 
   if (!LittleFS.begin()) {
     Serial.println("An error occured while mounting LittleFS.");
@@ -100,6 +162,18 @@ void setup() {
   pinMode(RELAY_PIN, OUTPUT);
   pinMode(LED_PIN, OUTPUT);
   pinMode(BUTTON_PIN, INPUT_PULLUP);
+
+  // init RTC 
+  if (!rtc.begin()) {
+    Serial.println("Couldn't find RTC.");
+    while (1);
+  }
+
+  /*
+  on startup, pull time from RTC.
+  when internet connected, update RTC with NTP. 
+  when internet not connected, get time from RTC. 
+  */
 
   Serial.print("Connecting to "); 
   Serial.println(LOCAL_SSID);
@@ -113,10 +187,13 @@ void setup() {
   }
   //  print local IP address and start web server 
   printWiFi();
+
+  // initialize NTP 
+  timeClient.begin();
+  timeClient.setTimeOffset(UTCOffsetInSeconds); // GMT+8
+
   // initialize websocket 
   initWebSocket(); 
-
-  
 }
 
 void loop() {
@@ -136,6 +213,68 @@ void printWiFi() {
   Serial.print("Signal strength (RSSI): "); 
   Serial.print(rssi);
   Serial.println(" dBm");
+}
+
+void printRTCTime(DateTime datetime) {
+  Serial.println("RTC time: ");
+  printTime(datetime.year(), datetime.month(), datetime.day(), 
+    datetime.hour(), datetime.minute(), datetime.second());
+  // Serial.print(datetime.dayOfTheWeek(), DEC); 
+  // Serial.print(' '); 
+  // Serial.println(daysOfTheWeek[datetime.dayOfTheWeek()]);
+  // Serial.println();
+}
+
+void printNTPTime(NTPClient timeClient) {
+  unsigned long epochTime = timeClient.getEpochTime();
+  Serial.println("NTP time: ");
+  printTime(year(epochTime), month(epochTime), day(epochTime), 
+    timeClient.getHours(), timeClient.getMinutes(), timeClient.getSeconds());
+  // Serial.print(timeClient.getFormattedTime());
+  // Serial.print(' ');
+  // Serial.print(timeClient.getDay());
+  // Serial.println();
+}
+
+void printTime(int year, int month, int day, int hour, int minute, int second) {
+  Serial.print(year);
+  Serial.print('/');
+  Serial.print(month);
+  Serial.print('/');
+  Serial.println(day);
+  Serial.print(' ');
+  Serial.print(hour); 
+  Serial.print(":");
+  Serial.print(minute); 
+  Serial.print(":");
+  Serial.print(second); 
+  Serial.println();
+}
+
+void updateNTPTime() {
+  // check if can access NTP server
+  timeClient.update();
+  bool NTPUpdateStatus = timeClient.isTimeSet(); 
+  // printNTPTime(timeClient);
+  // Serial.print("NTP update status: ");
+  // Serial.println(NTPUpdateStatus);
+  /*
+  when NTP successfully connected, update RTC with NTP. 
+  else get time from RTC. 
+  */
+  if (NTPUpdateStatus) {adjustRTCWithNTP(timeClient, rtc);}
+}
+
+void adjustRTCWithNTP(NTPClient timeClient, RTC_DS1307 rtc) {
+  unsigned long epochTime = timeClient.getEpochTime();
+  int _year = year(epochTime);
+  int _month = month(epochTime);
+  int _day = day(epochTime);
+  int hour = timeClient.getHours();
+  int minute = timeClient.getMinutes();
+  int second = timeClient.getSeconds();
+  rtc.adjust(DateTime(_year, _month, _day, hour, minute, second));
+  Serial.println("time adjusted from NTP to RTC.");
 }
 
 // run everytime new data is received from the websocket
@@ -188,31 +327,3 @@ void initWebSocket() {
   server.addHandler(&ws);
 }
 
-/* JSON formats: 
- - browser request status update from MCU 
-{
-  'type': 'status' (str)
-}
- - sending relay status from MCU to browser: 
-{
-  'type': 'status', (str)
-  'relay_status': true  (bool)
-}
- - sending current settings from MCU to browser:
-{
-  'type': 'config', (str)
-  'hours': {}, (array of 3 integers representing the three bytes stored in EEPROM)
-  'duration': 10 (int)
-}
- - sending updated settings from browser to MCU:
-{
-  'type': 'update_config', (str)
-  'hours': {}, (array of 3 integers representing the three bytes stored in EEPROM)
-  'duration': 10 (int)
-}
- - send command from browser to enable the relay:
-{
-  'type': 'control',
-  'relay_status': true (bool)
-}
-*/
