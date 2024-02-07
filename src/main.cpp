@@ -11,27 +11,33 @@
 #include <WiFiUdp.h>
 #include <TimeLib.h>
 
+// data structure for storing config in EEPROM 
+/*
+  schedule contains the bytes used to store the hours among the 24 hours in a day
+    when the relay is opened or closed
+  duration is how long the relay will be closed every time it is closed
+  gmtOffset is the offset in hours from UTC 
+  enableTimer enables or disables the automatic periodic behavior of the relay
+*/
+typedef struct {
+  byte schedule[3];
+  short duration; 
+  byte gmtOffset;
+  bool enableTimer;
+} timingconfig;
+
 // pins 
 #define RELAY_PIN 14 // D5 
 #define BUTTON_PIN 0 // D3
 #define LED_PIN 2 // D4
 
 // status variables 
-byte hourBits[3];
-int duration = 0;
-bool relayClosed = false; 
+timingconfig tC;
+bool* hours;
+bool relay = false; 
 
 // EEPROM 
 #define STARTING_ADDR 0x0
-
-// data structure for storing config in EEPROM 
-typedef struct {
-  byte schedule[3];
-  short duration; 
-} timingconfig;
-// 
-timingconfig tC;
-bool* hours;
 
 // RTC 
 RTC_DS1307 rtc; 
@@ -133,11 +139,10 @@ char strData[100];
 #define LOCAL_SSID "wifi"
 #define LOCAL_PASS "password"
 
-
 //static IP address configuration 
-IPAddress local_IP(192,168,5,75);
-IPAddress gateway(192,168,5,1);
-IPAddress subnet(255,255,255,0);
+// IPAddress local_IP(192,168,5,75);
+// IPAddress gateway(192,168,5,1);
+// IPAddress subnet(255,255,255,0);
 //IPAddress primaryDNS(8,8,8,8);
 //IPAddress secondaryDNS(8,8,4,4);
 
@@ -149,6 +154,7 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType
   type, void *arg, uint8_t *data, size_t len);
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len);
 void initWebSocket();
+
 void printTime(int year, int month, int day, int hour, int minute, int second);
 void printRTCTime(DateTime datetime); 
 void printNTPTime(NTPClient timeClient);
@@ -181,6 +187,7 @@ void setup() {
     Serial.println("An error occured while mounting LittleFS.");
   }
 
+  // pins
   pinMode(RELAY_PIN, OUTPUT);
   pinMode(LED_PIN, OUTPUT);
   pinMode(BUTTON_PIN, INPUT_PULLUP);
@@ -191,11 +198,12 @@ void setup() {
     while (1);
   }
 
+  // WiFi
   Serial.print("Connecting to "); 
   Serial.println(LOCAL_SSID);
-  if (!WiFi.config(local_IP, gateway, subnet)) {
-    Serial.println("Station failed to configure.");
-  }
+  // if (!WiFi.config(local_IP, gateway, subnet)) {
+  //   Serial.println("Station failed to configure.");
+  // }
   WiFi.begin(LOCAL_SSID, LOCAL_PASS); 
   while (WiFi.status() != WL_CONNECTED) {
     delay(500); 
