@@ -23,7 +23,6 @@ typedef struct {
   byte schedule[3];
   short duration; 
   byte gmtOffset;
-  bool enableTimer;
 } timingconfig;
 
 // pins 
@@ -31,13 +30,16 @@ typedef struct {
 #define BUTTON_PIN 0 // D3
 #define LED_PIN 2 // D4
 
-// status variables 
+// persistent settings
 timingconfig tC;
+bool autoEnabled;
 bool* hours;
+// transient settings
 bool relay = false; 
 
 // EEPROM 
 #define STARTING_ADDR 0x0
+unsigned int configAddr, autoEnableAddr;
 
 // RTC 
 RTC_DS1307 rtc; 
@@ -174,26 +176,31 @@ void printNTPTime(NTPClient timeClient);
 void updateNTPTime();
 void adjustRTCWithNTP(NTPClient timeClient, RTC_DS1307 rtc);
 
-void printTimingConfig(timingconfig tC);
-void loadFromEEPROM(unsigned int addr, timingconfig* tC);
-void saveToEEPROM(unsigned int addr, timingconfig tC);
-bool checkHour(timingconfig tC, int hour);
-bool* getActiveHours(timingconfig tC);
-void setHour(timingconfig* tC, int hour, bool newState); 
-void clearAllHours(timingconfig* tC); 
-void setDuration(timingconfig* tC, int newDuration);
+void printTimingConfig();
+void loadFromEEPROM();
+void saveToEEPROM();
+bool checkHour(int hour);
+bool* getActiveHours();
+void setHour(int hour, bool newState); 
+void clearAllHours(); 
+void setDuration(int newDuration);
 
 
 void setup() {
   Serial.begin(115200); 
   
   // initialize the emulated EEPROM as large as needed
-  EEPROM.begin(sizeof(timingconfig));
+  int EEPROMSize = sizeof(timingconfig) + sizeof(bool);
+  EEPROM.begin(EEPROMSize);
   
+  // calculate EEPROM addresses 
+  configAddr = STARTING_ADDR;
+  autoEnableAddr = configAddr + sizeof(timingconfig);
   // load previous timing configuration from EEPROM if it exists
-  loadFromEEPROM(STARTING_ADDR, &tC);
-  Serial.println("previous tC loaded from EEPROM: ");
-  printTimingConfig(tC);
+  loadFromEEPROM();
+  EEPROM.get(autoEnableAddr, autoEnabled);
+  Serial.println("configuration loaded from EEPROM: ");
+  printTimingConfig();
 
   // littleFS 
   if (!LittleFS.begin()) {
@@ -379,16 +386,31 @@ void initWebSocket() {
   server.addHandler(&ws);
 }
 
-void loadFromEEPROM(unsigned int addr, timingconfig* tC) {
-  EEPROM.get(addr, tC);
+// send status update to browser 
+void sendStatusUpdate() {
+  outputDoc.clear();
+  outputDoc["type"] = "status";
+  // outputDoc["auto_enabled"] = raw_lmotor_vel;
+  // outputDoc["relay_status"] = raw_rmotor_vel;
+  serializeJson(outputDoc, strData);
+  ws.textAll(strData);
 }
 
-void saveToEEPROM(unsigned int addr, timingconfig tC) {
-  EEPROM.put(addr, tC);
+// send the auto enable status 
+void setAutoEnable() {
+
+}
+
+void loadFromEEPROM() {
+  EEPROM.get(configAddr, tC);
+}
+
+void saveToEEPROM() {
+  EEPROM.put(configAddr, tC);
   EEPROM.commit();
 }
 
-void printTimingConfig(timingconfig tC) {
+void printTimingConfig() {
   Serial.print("schedule bytes = ");
   for (int i=0;i<3;i++) {
     Serial.print(tC.schedule[i]);  
@@ -401,7 +423,7 @@ void printTimingConfig(timingconfig tC) {
   Serial.println();
 }
 
-bool checkHour(timingconfig tC, int hour) {
+bool checkHour(int hour) {
   bool status;
   byte byteIndex = hour / 8; 
   byte currByte = tC.schedule[byteIndex]; 
@@ -412,7 +434,7 @@ bool checkHour(timingconfig tC, int hour) {
   return status;
 }
 
-bool* getActiveHours(timingconfig tC) {
+bool* getActiveHours() {
   static bool hours[24];
   // reset the hours array
   for (int h=0;h<24;h++) {
@@ -420,7 +442,7 @@ bool* getActiveHours(timingconfig tC) {
   }
   // check each bit in the schedule bytes then load it into the bool hours array 
   for (int h=0;h<24;h++) { 
-    hours[h] = checkHour(tC, h);
+    hours[h] = checkHour(h);
   }
   return hours;
 }
@@ -431,32 +453,32 @@ args:
   hour - hour of the day from 0-24 
   newState - 0 for disable and 1 for enable 
 */ 
-void setHour(timingconfig* tC, int hour, bool newState) {
+void setHour(int hour, bool newState) {
   int byteIndex = hour / 8;
   int bitIndex = hour % 8; 
   int mask = 1 << bitIndex; 
   Serial.print("mask = ");
   // if enabling the hour
   if (newState) {
-    tC->schedule[byteIndex] = tC->schedule[byteIndex] | mask;
+    tC.schedule[byteIndex] = tC.schedule[byteIndex] | mask;
   }
   // else disabling the hour
   else {
     mask = ~mask;
-    tC->schedule[byteIndex] = tC->schedule[byteIndex] & mask;
+    tC.schedule[byteIndex] = tC.schedule[byteIndex] & mask;
   }
   Serial.println(mask);
 }
 
 // set the duration of the timing configuration 
-void setDuration(timingconfig* tC, int newDuration) {
-  tC->duration = newDuration;
+void setDuration(int newDuration) {
+  tC.duration = newDuration;
 }
 
 // macro function to clear all hours in the schedule and reset interval to 0
-void clearAllHours(timingconfig* tC) {
-  setDuration(tC, 0);
+void clearAllHours() {
+  setDuration(0);
   for (int h=0; h<24; h++) {
-    setHour(tC, h, 0);
+    setHour(h, 0);
   }
 }
