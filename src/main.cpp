@@ -109,14 +109,14 @@ use bitwise AND with the inverse of a left shift.
   'auto_enabled': bool,
   'relay_status': bool
 }
-- enable the automatic relay timer. Enabling the automatic relay timer will enable
+- Toggle the automatic relay timer. Enabling the automatic relay timer will enable
 the daily relay schedule, and disabling the automatic relay timer will simply 
 disable the daily relay schedule so the only time the relay closes is if the user
 manually toggles the momentary relay button on the webpage or the physical button.
 This command is sent by the browser right away after the user toggles the automatic
 toggle.
 {
-  'type': 'toggle_auto',
+  'type': 'auto',
   'auto_enabled': bool
 }
  - sending current settings from MCU to browser
@@ -135,7 +135,7 @@ toggle.
 }
  - send command from browser to enable the relay momentarily for the saved duration.
 {
-  'type': 'control',
+  'type': 'relay',
   'relay_status': bool 
 }
 */
@@ -350,11 +350,26 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       Serial.println("deserializeJson success");
       
     String commandType = inputDoc["type"];
-    // //    send status JSON
+    // send status JSON
     if (commandType == "status") {
       // sendStatusUpdate();
     }
+    // toggle the automatic relay timer 
+    else if (commandType == "auto") {
 
+    }
+    // send persistent settings JSON
+    else if (commandType == "settings") {
+      
+    }
+    // save persistent settings to EEPROM 
+    else if (commandType == "chg_settings") {
+      
+    }
+    // close the relay momentarily from user manual input 
+    else if (commandType == "relay") {
+      
+    }
   }
 }
 
