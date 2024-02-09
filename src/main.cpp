@@ -193,13 +193,23 @@ void sendTimingConfig();
 void setup() {
   Serial.begin(115200); 
   
-  // 
-
+  // testing 
+  // inputDoc.clear();
+  // JsonArray hours = inputDoc.createNestedArray("hours");
+  // for (int i=0;i<3;i++) {
+  //   hours.add((i+1)*8);
+  // }
+  // inputDoc["duration"] = 30;
+  // inputDoc["gmt_offset"] = 8;
+  
 
   // initialize the emulated EEPROM as large as needed
   int EEPROMSize = sizeof(timingconfig) + sizeof(bool);
   EEPROM.begin(EEPROMSize);
-  
+
+  // testing
+  // setTimingConfig();
+
   // calculate EEPROM addresses 
   configAddr = STARTING_ADDR;
   autoEnableAddr = configAddr + sizeof(timingconfig);
@@ -302,6 +312,10 @@ void printTime(int year, int month, int day, int hour, int minute, int second) {
   Serial.println();
 }
 
+/*
+Update the RTC and local time with NTP time only if the ESP can connect to the 
+NTP server
+*/
 void updateNTPTime() {
   // check if can access NTP server
   timeClient.update();
@@ -380,7 +394,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
     }
     // save persistent settings to EEPROM 
     else if (commandType == "chg_settings") {
-      
+      setTimingConfig();
     }
     // close the relay momentarily from user manual input 
     else if (commandType == "relay") {
@@ -419,22 +433,30 @@ void sendTimingConfig() {
   ws.textAll(strData);
 }
 
-// get the auto enable status 
+// get the auto enable status from the EEPROM
 void getAutoEnable() {
   EEPROM.get(autoEnableAddr, autoEnabled);
 }
 
-// send the auto enable status 
+// set the auto enable status from JSON and put it into the EEPROM
 void setAutoEnable() {
   autoEnabled = inputDoc["auto_enabled"];
   EEPROM.put(autoEnableAddr, autoEnabled);
 }
 
+// get timing configuration from the EEPROM
 void getTimingConfig() {
   EEPROM.get(configAddr, tC);
 }
 
+// set the timing configuration from JSON and put it into the EEPROM
 void setTimingConfig() {
+  for (int i=0;i<3;i++) {
+    tC.hours[i] = inputDoc["hours"][i];
+  }
+  tC.duration = inputDoc["duration"];
+  tC.gmtOffset = inputDoc["gmt_offset"];
+  // printTimingConfig();
   EEPROM.put(configAddr, tC);
   EEPROM.commit();
 }
@@ -452,6 +474,7 @@ void printTimingConfig() {
   Serial.println();
 }
 
+// check the state of a certain hour
 bool checkHour(int hour) {
   bool status;
   byte byteIndex = hour / 8; 
@@ -463,6 +486,8 @@ bool checkHour(int hour) {
   return status;
 }
 
+// return a bool array with 24 elements representing the truth state of each hour
+// in a day
 bool* getActiveHours() {
   static bool hours[24];
   // reset the hours array
