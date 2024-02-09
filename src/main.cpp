@@ -13,14 +13,14 @@
 
 // data structure for storing config in EEPROM 
 /*
-  schedule contains the bytes used to store the hours among the 24 hours in a day
+  hours contains the bytes used to store the hours among the 24 hours in a day
     when the relay is opened or closed
   duration is how long the relay will be closed every time it is closed
   gmtOffset is the offset in hours from UTC 
   enableTimer enables or disables the automatic periodic behavior of the relay
 */
 typedef struct {
-  byte schedule[3];
+  byte hours[3];
   short duration; 
   byte gmtOffset;
 } timingconfig;
@@ -112,8 +112,8 @@ use bitwise AND with the inverse of a left shift.
   'relay_status': bool
 }
 - Toggle the automatic relay timer. Enabling the automatic relay timer will enable
-the daily relay schedule, and disabling the automatic relay timer will simply 
-disable the daily relay schedule so the only time the relay closes is if the user
+the daily relay hours, and disabling the automatic relay timer will simply 
+disable the daily relay hours so the only time the relay closes is if the user
 manually toggles the momentary relay button on the webpage or the physical button.
 This command is sent by the browser right away after the user toggles the automatic
 toggle.
@@ -177,18 +177,25 @@ void updateNTPTime();
 void adjustRTCWithNTP(NTPClient timeClient, RTC_DS1307 rtc);
 
 void printTimingConfig();
-void loadFromEEPROM();
-void saveToEEPROM();
+void getAutoEnable();
+void getTimingConfig();
+void setAutoEnable();
+void setTimingConfig();
 bool checkHour(int hour);
 bool* getActiveHours();
 void setHour(int hour, bool newState); 
 void clearAllHours(); 
 void setDuration(int newDuration);
 
+void sendStatus();
+void sendTimingConfig();
 
 void setup() {
   Serial.begin(115200); 
   
+  // 
+
+
   // initialize the emulated EEPROM as large as needed
   int EEPROMSize = sizeof(timingconfig) + sizeof(bool);
   EEPROM.begin(EEPROMSize);
@@ -197,8 +204,8 @@ void setup() {
   configAddr = STARTING_ADDR;
   autoEnableAddr = configAddr + sizeof(timingconfig);
   // load previous timing configuration from EEPROM if it exists
-  loadFromEEPROM();
-  EEPROM.get(autoEnableAddr, autoEnabled);
+  getTimingConfig();
+  getAutoEnable();
   Serial.println("configuration loaded from EEPROM: ");
   printTimingConfig();
 
@@ -215,7 +222,7 @@ void setup() {
   // init RTC 
   if (!rtc.begin()) {
     Serial.println("Couldn't find RTC.");
-    while (1);
+    // while (1);
   }
 
   // WiFi
@@ -242,7 +249,7 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  
+  ws.cleanupClients();
 }
 
 
@@ -359,15 +366,17 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
     String commandType = inputDoc["type"];
     // send status JSON
     if (commandType == "status") {
-      // sendStatusUpdate();
+      getAutoEnable();
+      sendStatus();
     }
     // toggle the automatic relay timer 
     else if (commandType == "auto") {
-
+      setAutoEnable();
     }
     // send persistent settings JSON
     else if (commandType == "settings") {
-      
+      getTimingConfig();  
+      sendTimingConfig();
     }
     // save persistent settings to EEPROM 
     else if (commandType == "chg_settings") {
@@ -387,33 +396,53 @@ void initWebSocket() {
 }
 
 // send status update to browser 
-void sendStatusUpdate() {
+void sendStatus() {
   outputDoc.clear();
   outputDoc["type"] = "status";
-  // outputDoc["auto_enabled"] = raw_lmotor_vel;
-  // outputDoc["relay_status"] = raw_rmotor_vel;
+  outputDoc["auto_enabled"] = autoEnabled;
+  outputDoc["relay_status"] = relay;
   serializeJson(outputDoc, strData);
   ws.textAll(strData);
 }
 
-// send the auto enable status 
-void setAutoEnable() {
-
+// send persistent settings to browser
+void sendTimingConfig() {
+  outputDoc.clear(); 
+  outputDoc["type"] = "settings";
+  JsonArray hours = outputDoc.createNestedArray("hours");
+  for (int i=0;i<3;i++) {
+    hours.add(tC.hours[i]);
+  }
+  outputDoc["duration"] = tC.duration;
+  outputDoc["gmt_offset"] = tC.gmtOffset;
+  serializeJson(outputDoc, strData);
+  ws.textAll(strData);
 }
 
-void loadFromEEPROM() {
+// get the auto enable status 
+void getAutoEnable() {
+  EEPROM.get(autoEnableAddr, autoEnabled);
+}
+
+// send the auto enable status 
+void setAutoEnable() {
+  autoEnabled = inputDoc["auto_enabled"];
+  EEPROM.put(autoEnableAddr, autoEnabled);
+}
+
+void getTimingConfig() {
   EEPROM.get(configAddr, tC);
 }
 
-void saveToEEPROM() {
+void setTimingConfig() {
   EEPROM.put(configAddr, tC);
   EEPROM.commit();
 }
 
 void printTimingConfig() {
-  Serial.print("schedule bytes = ");
+  Serial.print("hours bytes = ");
   for (int i=0;i<3;i++) {
-    Serial.print(tC.schedule[i]);  
+    Serial.print(tC.hours[i]);  
     if (i<2)
       Serial.print(", ");
     else Serial.print(" ");
@@ -426,7 +455,7 @@ void printTimingConfig() {
 bool checkHour(int hour) {
   bool status;
   byte byteIndex = hour / 8; 
-  byte currByte = tC.schedule[byteIndex]; 
+  byte currByte = tC.hours[byteIndex]; 
   byte offset = hour % 8; 
   currByte = currByte >> offset;
   currByte = currByte & 1; 
@@ -440,7 +469,7 @@ bool* getActiveHours() {
   for (int h=0;h<24;h++) {
     hours[h] = 0;
   }
-  // check each bit in the schedule bytes then load it into the bool hours array 
+  // check each bit in the hours bytes then load it into the bool hours array 
   for (int h=0;h<24;h++) { 
     hours[h] = checkHour(h);
   }
@@ -460,12 +489,12 @@ void setHour(int hour, bool newState) {
   Serial.print("mask = ");
   // if enabling the hour
   if (newState) {
-    tC.schedule[byteIndex] = tC.schedule[byteIndex] | mask;
+    tC.hours[byteIndex] = tC.hours[byteIndex] | mask;
   }
   // else disabling the hour
   else {
     mask = ~mask;
-    tC.schedule[byteIndex] = tC.schedule[byteIndex] & mask;
+    tC.hours[byteIndex] = tC.hours[byteIndex] & mask;
   }
   Serial.println(mask);
 }
@@ -475,7 +504,7 @@ void setDuration(int newDuration) {
   tC.duration = newDuration;
 }
 
-// macro function to clear all hours in the schedule and reset interval to 0
+// macro function to clear all hours in the hours and reset interval to 0
 void clearAllHours() {
   setDuration(0);
   for (int h=0; h<24; h++) {
