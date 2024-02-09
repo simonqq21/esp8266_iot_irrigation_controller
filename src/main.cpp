@@ -10,6 +10,16 @@
 #include <NTPClient.h> 
 #include <WiFiUdp.h>
 #include <TimeLib.h>
+#include "module1.h"
+#include "settingsModule.h"
+#include "constants.h"
+
+/*
+settingsModule - getting and setting persistent settings to and from EEPROM
+timeModule - getting and setting time between RTC and NTP 
+ioModule - handle physical IO between button, relay, and LED
+main - handle websocket client
+*/
 
 // data structure for storing config in EEPROM 
 /*
@@ -19,27 +29,20 @@
   gmtOffset is the offset in hours from UTC 
   enableTimer enables or disables the automatic periodic behavior of the relay
 */
-typedef struct {
-  byte hours[3];
-  short duration; 
-  byte gmtOffset;
-} timingconfig;
 
 // pins 
 #define RELAY_PIN 14 // D5 
 #define BUTTON_PIN 0 // D3
 #define LED_PIN 2 // D4
 
-// persistent settings
-timingconfig tC;
-bool autoEnabled;
-bool* hours;
 // transient settings
+bool* hours;
 bool relay = false; 
 
 // EEPROM 
-#define STARTING_ADDR 0x0
-unsigned int configAddr, autoEnableAddr;
+extern unsigned int configAddr, autoEnableAddr;
+extern timingconfig tC;
+extern bool autoEnabled;
 
 // RTC 
 RTC_DS1307 rtc; 
@@ -176,23 +179,15 @@ void printNTPTime(NTPClient timeClient);
 void updateNTPTime();
 void adjustRTCWithNTP(NTPClient timeClient, RTC_DS1307 rtc);
 
-void printTimingConfig();
-void getAutoEnable();
-void getTimingConfig();
-void setAutoEnable();
-void setTimingConfig();
-bool checkHour(int hour);
-bool* getActiveHours();
-void setHour(int hour, bool newState); 
-void clearAllHours(); 
-void setDuration(int newDuration);
+
 
 void sendStatus();
 void sendTimingConfig();
 
 void setup() {
   Serial.begin(115200); 
-  
+  print_hello();
+
   // testing 
   // inputDoc.clear();
   // JsonArray hours = inputDoc.createNestedArray("hours");
@@ -433,106 +428,15 @@ void sendTimingConfig() {
   ws.textAll(strData);
 }
 
-// get the auto enable status from the EEPROM
-void getAutoEnable() {
-  EEPROM.get(autoEnableAddr, autoEnabled);
-}
 
-// set the auto enable status from JSON and put it into the EEPROM
-void setAutoEnable() {
-  autoEnabled = inputDoc["auto_enabled"];
-  EEPROM.put(autoEnableAddr, autoEnabled);
-}
 
-// get timing configuration from the EEPROM
-void getTimingConfig() {
-  EEPROM.get(configAddr, tC);
-}
 
-// set the timing configuration from JSON and put it into the EEPROM
-void setTimingConfig() {
-  for (int i=0;i<3;i++) {
-    tC.hours[i] = inputDoc["hours"][i];
-  }
-  tC.duration = inputDoc["duration"];
-  tC.gmtOffset = inputDoc["gmt_offset"];
-  // printTimingConfig();
-  EEPROM.put(configAddr, tC);
-  EEPROM.commit();
-}
 
-void printTimingConfig() {
-  Serial.print("hours bytes = ");
-  for (int i=0;i<3;i++) {
-    Serial.print(tC.hours[i]);  
-    if (i<2)
-      Serial.print(", ");
-    else Serial.print(" ");
-  }
-  Serial.print("duration = ");
-  Serial.print(tC.duration);
-  Serial.println();
-}
 
-// check the state of a certain hour
-bool checkHour(int hour) {
-  bool status;
-  byte byteIndex = hour / 8; 
-  byte currByte = tC.hours[byteIndex]; 
-  byte offset = hour % 8; 
-  currByte = currByte >> offset;
-  currByte = currByte & 1; 
-  status = (currByte) ? true: false;
-  return status;
-}
 
-// return a bool array with 24 elements representing the truth state of each hour
-// in a day
-bool* getActiveHours() {
-  static bool hours[24];
-  // reset the hours array
-  for (int h=0;h<24;h++) {
-    hours[h] = 0;
-  }
-  // check each bit in the hours bytes then load it into the bool hours array 
-  for (int h=0;h<24;h++) { 
-    hours[h] = checkHour(h);
-  }
-  return hours;
-}
 
-/* set the hour in the timing configuration to the specified state. 
-args:
-  tC - timingConfig object 
-  hour - hour of the day from 0-24 
-  newState - 0 for disable and 1 for enable 
-*/ 
-void setHour(int hour, bool newState) {
-  int byteIndex = hour / 8;
-  int bitIndex = hour % 8; 
-  int mask = 1 << bitIndex; 
-  Serial.print("mask = ");
-  // if enabling the hour
-  if (newState) {
-    tC.hours[byteIndex] = tC.hours[byteIndex] | mask;
-  }
-  // else disabling the hour
-  else {
-    mask = ~mask;
-    tC.hours[byteIndex] = tC.hours[byteIndex] & mask;
-  }
-  Serial.println(mask);
-}
 
-// set the duration of the timing configuration 
-void setDuration(int newDuration) {
-  tC.duration = newDuration;
-}
 
-// macro function to clear all hours in the hours and reset interval to 0
-void clearAllHours() {
-  setDuration(0);
-  for (int h=0; h<24; h++) {
-    setHour(h, 0);
-  }
-}
+
+
+
