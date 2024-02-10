@@ -12,6 +12,7 @@
 #include <TimeLib.h>
 #include "module1.h"
 #include "settingsModule.h"
+#include "timeModule.h"
 #include "constants.h"
 
 /*
@@ -20,20 +21,6 @@ timeModule - getting and setting time between RTC and NTP
 ioModule - handle physical IO between button, relay, and LED
 main - handle websocket client
 */
-
-// data structure for storing config in EEPROM 
-/*
-  hours contains the bytes used to store the hours among the 24 hours in a day
-    when the relay is opened or closed
-  duration is how long the relay will be closed every time it is closed
-  gmtOffset is the offset in hours from UTC 
-  enableTimer enables or disables the automatic periodic behavior of the relay
-*/
-
-// pins 
-#define RELAY_PIN 14 // D5 
-#define BUTTON_PIN 0 // D3
-#define LED_PIN 2 // D4
 
 // transient settings
 bool* hours;
@@ -45,13 +32,12 @@ extern timingconfig tC;
 extern bool autoEnabled;
 
 // RTC 
-RTC_DS1307 rtc; 
-DateTime dtnow; 
+extern RTC_DS1307 rtc; 
+extern DateTime dtnow; 
 
-// NTP server 
-const long UTCOffsetInSeconds = 28800;
-WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP, "ntp.pagasa.dost.gov.ph"); 
+// // NTP server 
+extern long UTCOffsetInSeconds;
+extern NTPClient timeClient; 
 
 
 // // string array of days of the week
@@ -64,45 +50,6 @@ NTPClient timeClient(ntpUDP, "ntp.pagasa.dost.gov.ph");
 //   "Saturday", 
 //   "Sunday"
 // };
-
-// configuration variables 
-/*  The configuration variables are the ff:
-- a list of three bytes where the 24 hours per day are represented. The data is 
-stored in little endian order, so the organization of 24 hours into three bytes
-will be arranged as below:
-
-address |       00                    01                       02
-hours   | 7 6 5 4 3 2 1 0 | 15 14 13 12 11 10 9 8 | 23 22 21 20 19 18 17 16
-
-so if a bit is high, the relay will close contacts for the set duration at the start
-of that hour before opening contacts for the rest of the hour, but if that bit is 
-low, then the relay will remain open contact for that hour.
-
-eg. if the relay must close at 7AM and remain open the rest of the time,
-7 / 8 = 0, byte 0.  0000 0111 >> 3 = 0
-7 % 8 = 7, 7th bit. 0000 0111 & 
-change byte 0, 7th bit to 1. 
-    xxxxxxxx
-OR  10000000 (1 << 7)
-------------
-=   1xxxxxxx
-
-if changing a bit to 0, 
-    xxxxxxxx
-AND 01111111 (!(1 << 7))
-------------
-=   1xxxxxxx
-
-Perform modulo 8 by AND of the number and 00000111.
-
-TLDR: 
-  To get a certain bit, first integer divide the hour by 8 to get the nth
-  byte, bitwise shift right the nth byte by the modulo of the hour and 8, then
-  AND the result with 00000001 to get a 1 or a 0. 
-  To switch a bit on, use bitwise OR with a left shift, to switch a bit off, 
-use bitwise AND with the inverse of a left shift. 
-*/
-
 /* JSON formats:
  - browser request status update from MCU 
 {
@@ -172,15 +119,6 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType
   type, void *arg, uint8_t *data, size_t len);
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len);
 void initWebSocket();
-
-void printTime(int year, int month, int day, int hour, int minute, int second);
-void printRTCTime(DateTime datetime); 
-void printNTPTime(NTPClient timeClient);
-void updateNTPTime();
-void adjustRTCWithNTP(NTPClient timeClient, RTC_DS1307 rtc);
-
-
-
 void sendStatus();
 void sendTimingConfig();
 
@@ -257,7 +195,6 @@ void loop() {
   ws.cleanupClients();
 }
 
-
 void printWiFi() {
   Serial.println(" ");
   Serial.println("WiFi connected.");
@@ -269,72 +206,6 @@ void printWiFi() {
   Serial.print("Signal strength (RSSI): "); 
   Serial.print(rssi);
   Serial.println(" dBm");
-}
-
-void printRTCTime(DateTime datetime) {
-  Serial.println("RTC time: ");
-  printTime(datetime.year(), datetime.month(), datetime.day(), 
-    datetime.hour(), datetime.minute(), datetime.second());
-  // Serial.print(datetime.dayOfTheWeek(), DEC); 
-  // Serial.print(' '); 
-  // Serial.println(daysOfTheWeek[datetime.dayOfTheWeek()]);
-  // Serial.println();
-}
-
-void printNTPTime(NTPClient timeClient) {
-  unsigned long epochTime = timeClient.getEpochTime();
-  Serial.println("NTP time: ");
-  printTime(year(epochTime), month(epochTime), day(epochTime), 
-    timeClient.getHours(), timeClient.getMinutes(), timeClient.getSeconds());
-  // Serial.print(timeClient.getFormattedTime());
-  // Serial.print(' ');
-  // Serial.print(timeClient.getDay());
-  // Serial.println();
-}
-
-void printTime(int year, int month, int day, int hour, int minute, int second) {
-  Serial.print(year);
-  Serial.print('/');
-  Serial.print(month);
-  Serial.print('/');
-  Serial.println(day);
-  Serial.print(' ');
-  Serial.print(hour); 
-  Serial.print(":");
-  Serial.print(minute); 
-  Serial.print(":");
-  Serial.print(second); 
-  Serial.println();
-}
-
-/*
-Update the RTC and local time with NTP time only if the ESP can connect to the 
-NTP server
-*/
-void updateNTPTime() {
-  // check if can access NTP server
-  timeClient.update();
-  bool NTPUpdateStatus = timeClient.isTimeSet(); 
-  // printNTPTime(timeClient);
-  // Serial.print("NTP update status: ");
-  // Serial.println(NTPUpdateStatus);
-  /*
-  when NTP successfully connected, update RTC with NTP. 
-  else get time from RTC. 
-  */
-  if (NTPUpdateStatus) {adjustRTCWithNTP(timeClient, rtc);}
-}
-
-void adjustRTCWithNTP(NTPClient timeClient, RTC_DS1307 rtc) {
-  unsigned long epochTime = timeClient.getEpochTime();
-  int _year = year(epochTime);
-  int _month = month(epochTime);
-  int _day = day(epochTime);
-  int hour = timeClient.getHours();
-  int minute = timeClient.getMinutes();
-  int second = timeClient.getSeconds();
-  rtc.adjust(DateTime(_year, _month, _day, hour, minute, second));
-  Serial.println("time adjusted from NTP to RTC.");
 }
 
 // run everytime new data is received from the websocket
@@ -427,16 +298,3 @@ void sendTimingConfig() {
   serializeJson(outputDoc, strData);
   ws.textAll(strData);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
