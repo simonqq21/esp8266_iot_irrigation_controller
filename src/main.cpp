@@ -13,6 +13,7 @@
 #include "module1.h"
 #include "settingsModule.h"
 #include "timeModule.h"
+#include "ioModule.h"
 #include "constants.h"
 
 /*
@@ -174,11 +175,7 @@ void setup() {
   // if (!WiFi.config(local_IP, gateway, subnet)) {
   //   Serial.println("Station failed to configure.");
   // }
-  WiFi.begin(LOCAL_SSID, LOCAL_PASS); 
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500); 
-    Serial.print(".");
-  }
+ 
   //  print local IP address and start web server 
   printWiFi();
 
@@ -193,6 +190,7 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   ws.cleanupClients();
+  checkButton();
 }
 
 void printWiFi() {
