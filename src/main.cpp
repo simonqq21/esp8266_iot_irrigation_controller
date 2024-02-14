@@ -10,7 +10,6 @@
 #include <NTPClient.h> 
 #include <WiFiUdp.h>
 #include <TimeLib.h>
-#include "module1.h"
 #include "settingsModule.h"
 #include "timeModule.h"
 #include "ioModule.h"
@@ -125,7 +124,6 @@ void sendTimingConfig();
 
 void setup() {
   Serial.begin(115200); 
-  print_hello();
 
   // testing 
   // inputDoc.clear();
@@ -190,7 +188,7 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   ws.cleanupClients();
-  checkButton();
+  // checkButton();
 }
 
 void printWiFi() {
