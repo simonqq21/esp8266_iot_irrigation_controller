@@ -3,10 +3,11 @@
 #include <Arduino.h> 
 #include "constants.h"
 
-void closeRelay(int seconds);
+void closeRelay();
 void controlRelay();
 void checkButton();
 void executeActionOnBtnPress();
+void calculateBlinkDurations();
 void setLED(int state);
 void controlLED();
 

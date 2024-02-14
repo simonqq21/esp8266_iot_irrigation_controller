@@ -134,7 +134,6 @@ void setup() {
   // inputDoc["duration"] = 30;
   // inputDoc["gmt_offset"] = 8;
   
-
   // initialize the emulated EEPROM as large as needed
   int EEPROMSize = sizeof(timingconfig) + sizeof(bool);
   EEPROM.begin(EEPROMSize);
@@ -149,6 +148,8 @@ void setup() {
   getTimingConfig();
   getAutoEnable();
   Serial.println("configuration loaded from EEPROM: ");
+
+  tC.duration = 2;
   printTimingConfig();
 
   // littleFS 
@@ -160,6 +161,9 @@ void setup() {
   pinMode(RELAY_PIN, OUTPUT);
   pinMode(LED_PIN, OUTPUT);
   pinMode(BUTTON_PIN, INPUT_PULLUP);
+
+  calculateBlinkDurations();
+  setLED(LED_BLINK);
 
   // init RTC 
   if (!rtc.begin()) {
@@ -186,9 +190,14 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  // websocket loop
   ws.cleanupClients();
-  // checkButton();
+  // IO functions
+
+  controlRelay();
+  controlLED();
+  checkButton();
+  executeActionOnBtnPress();
 }
 
 void printWiFi() {
@@ -260,7 +269,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
     }
     // close the relay momentarily from user manual input 
     else if (commandType == "relay") {
-      
+      closeRelay();
     }
   }
 }
