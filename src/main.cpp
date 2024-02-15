@@ -168,7 +168,6 @@ void setup() {
   // init RTC 
   if (!rtc.begin()) {
     Serial.println("Couldn't find RTC.");
-    // while (1);
   }
 
   // WiFi
@@ -178,10 +177,10 @@ void setup() {
   //   Serial.println("Station failed to configure.");
   // }
   WiFi.begin(LOCAL_SSID, LOCAL_PASS); 
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500); 
-    Serial.print(".");
-  }
+  // while (WiFi.status() != WL_CONNECTED) {
+  //   delay(500); 
+  //   Serial.print(".");
+  // }
   //  print local IP address and start web server 
   printWiFi();
 
