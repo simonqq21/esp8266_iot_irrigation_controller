@@ -51,47 +51,49 @@ extern NTPClient timeClient;
 //   "Sunday"
 // };
 /* JSON formats:
- - browser request status update from MCU 
-{
-  'type': 'status'
-}
- - sending relay status from MCU to browser
-{
-  'type': 'status',
-  'auto_enabled': bool,
-  'relay_status': bool
-}
-- Toggle the automatic relay timer. Enabling the automatic relay timer will enable
-the daily relay hours, and disabling the automatic relay timer will simply 
-disable the daily relay hours so the only time the relay closes is if the user
-manually toggles the momentary relay button on the webpage or the physical button.
-This command is sent by the browser right away after the user toggles the automatic
-toggle.
-{
-  'type': 'auto',
-  'auto_enabled': bool
-}
- - sending current settings from MCU to browser
-{
-  'type': 'settings', 
-  'hours': array of 3 bytes representing the three bytes stored in EEPROM,
-  'duration': int from 0 to 60,
-  'gmt_offset': int from -12 to 12,
-}
- - sending updated settings from browser to MCU
-{
-  'type': 'chg_settings',
-  'hours': array of 3 bytes representing the three bytes stored in EEPROM,
-  'duration': int from 0 to 60,
-  'gmt_offset': int from -12 to 12,
-}
- - send command from browser to enable the relay momentarily for the saved duration.
-{
-  'type': 'relay',
-  'relay_status': bool 
-}
-*/
+ - From browser to MCU 
+   - browser request status update from MCU 
+  {
+    'type': 'status'
+  }
+  - Toggle the automatic relay timer. Enabling the automatic relay timer will enable
+  the daily relay hours, and disabling the automatic relay timer will simply 
+  disable the daily relay hours so the only time the relay closes is if the user
+  manually toggles the momentary relay button on the webpage or the physical button.
+  This command is sent by the browser right away after the user toggles the automatic
+  toggle.
+  {
+    'type': 'auto',
+    'auto_enabled': bool
+  }
+  - sending updated settings from browser to MCU
+  {
+    'type': 'chg_settings',
+    'hours': array of 3 bytes representing the three bytes stored in EEPROM,
+    'duration': int from 0 to 60,
+    'gmt_offset': int from -12 to 12,
+  }
+   - send command from browser to enable the relay momentarily for the saved duration.
+  {
+    'type': 'relay',
+    'relay_status': bool 
+  }
 
+ - From MCU to browser 
+  - sending relay status from MCU to browser
+  {
+    'type': 'status',
+    'auto_enabled': bool,
+    'relay_status': bool
+  }
+   - sending current settings from MCU to browser
+  {
+    'type': 'settings', 
+    'hours': array of 3 bytes representing the three bytes stored in EEPROM,
+    'duration': int from 0 to 60,
+    'gmt_offset': int from -12 to 12,
+  }
+*/
 
 // async web server
 AsyncWebServer server(80); 
