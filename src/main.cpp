@@ -103,13 +103,13 @@ StaticJsonDocument<100> outputDoc;
 char strData[100];
 
 // wifi credentials
-#define LOCAL_SSID "wifi"
-#define LOCAL_PASS "password"
+// #define LOCAL_SSID "wifi"
+// #define LOCAL_PASS "password"
 
 //static IP address configuration 
-// IPAddress local_IP(192,168,5,75);
-// IPAddress gateway(192,168,5,1);
-// IPAddress subnet(255,255,255,0);
+IPAddress local_IP(192,168,5,75);
+IPAddress gateway(192,168,5,1);
+IPAddress subnet(255,255,255,0);
 //IPAddress primaryDNS(8,8,8,8);
 //IPAddress secondaryDNS(8,8,4,4);
 
@@ -136,6 +136,11 @@ void setup() {
   // inputDoc["duration"] = 30;
   // inputDoc["gmt_offset"] = 8;
   
+  // littleFS 
+  if (!LittleFS.begin()) {
+    Serial.println("An error occured while mounting LittleFS.");
+  }
+
   // initialize the emulated EEPROM as large as needed
   int EEPROMSize = sizeof(timingconfig) + sizeof(bool);
   EEPROM.begin(EEPROMSize);
@@ -154,11 +159,6 @@ void setup() {
   tC.duration = 2;
   printTimingConfig();
 
-  // littleFS 
-  if (!LittleFS.begin()) {
-    Serial.println("An error occured while mounting LittleFS.");
-  }
-
   // pins
   pinMode(RELAY_PIN, OUTPUT);
   pinMode(LED_PIN, OUTPUT);
@@ -175,9 +175,9 @@ void setup() {
   // WiFi
   Serial.print("Connecting to "); 
   Serial.println(LOCAL_SSID);
-  // if (!WiFi.config(local_IP, gateway, subnet)) {
-  //   Serial.println("Station failed to configure.");
-  // }
+  if (!WiFi.config(local_IP, gateway, subnet)) {
+    Serial.println("Station failed to configure.");
+  }
   WiFi.begin(LOCAL_SSID, LOCAL_PASS); 
   // while (WiFi.status() != WL_CONNECTED) {
   //   delay(500); 
@@ -192,6 +192,28 @@ void setup() {
 
   // initialize websocket 
   initWebSocket(); 
+
+  // route for root web page 
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(LittleFS, "/index.html", String(), false);});
+  server.on("/styles.css", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(LittleFS, "/styles.css", "text/css", false);});
+  server.on("/jquery.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(LittleFS, "/jquery.js", "text/javascript", false);});
+  server.on("/s.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(LittleFS, "/s.js", "text/javascript", false);});
+  server.begin();
+
+  File file = LittleFS.open("/index.html", "r");
+  if(!file){
+    Serial.println("Failed to open file for reading");
+  }
+  
+  Serial.println("File Content:");
+  while(file.available()){
+    Serial.write(file.read());
+  }
+  file.close();
 }
 
 void loop() {
