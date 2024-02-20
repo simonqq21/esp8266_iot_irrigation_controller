@@ -53,7 +53,7 @@ clicking on the activate pump button activates the pump momentarily
   }
 */
 
-let gateway = `ws://${window.location.hostname}:5555/ws`; 
+let gateway = `ws://${window.location.hostname}:80/ws`; 
 let websocket;  
 let debug = true; 
 
@@ -144,7 +144,6 @@ function updateSettings() {
 close the relay for a specified amount of time 
 */
 function closeRelay() {
-    alert("relay close");
     setRelay(true);
     setTimeout(setRelay, 1000, false);
 }
@@ -176,15 +175,11 @@ $(document).ready(function() {
     initWebSocket();
 
     // testing 
-    // closeRelay();
+    closeRelay();
 
     // set the callback functions here 
-    $("#masterSwitch").click(function() {
-        toggleTimerEnable();
-    });
-    $("#closeRelayBtn").click(function() {
-        closeRelay();
-    });
+    $("#masterSwitch").click(toggleTimerEnable);
+    $("#closeRelayBtn").click(closeRelay());
     // set the intervals here 
     setInterval(requestStatus, 500);
     setInterval(requestTimingConfig, 10000);

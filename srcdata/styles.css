@@ -1,0 +1,37 @@
+* {
+    font-family:Arial, Helvetica, sans-serif;
+}
+div:not(div > div) {
+    /* background-color: green; */
+    /* margin: 30px; */
+    margin: 0px 10px 10px;
+}
+button {
+    font-size: 20px;
+}
+#irrigationStatusDiv {
+    display: block;
+    align-content: center;
+    justify-content: center;
+}
+#irrigationStatusDiv > * {
+    display: inline-block;
+}
+#irrigationStatusIndicator {
+    width: 5vh; 
+    height: 5vh;
+    min-width: 50px;
+    min-height: 50px;
+    border-radius: 50%;
+    background-color: red;
+}
+.irrigationScheduleRow {
+    display: flex; 
+    flex-wrap: wrap;
+    gap: 20px;
+}
+.irrigationScheduleRow > button {
+    min-width: 50px;
+    min-height: 50px;
+    /* flex-grow: 3; */
+}

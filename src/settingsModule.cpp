@@ -22,6 +22,10 @@ void printTimingConfig() {
   }
   Serial.print("duration = ");
   Serial.print(tC.duration);
+  Serial.print();
+
+  Serial.print("gmt_offset = ");
+  Serial.print(tC.gmtOffset);
   Serial.println();
 }
 

@@ -96,15 +96,15 @@ extern NTPClient timeClient;
 */
 
 // async web server
-AsyncWebServer server(80); 
+AsyncWebServer server(5555); 
 AsyncWebSocket ws("/ws"); 
 StaticJsonDocument<100> inputDoc;
 StaticJsonDocument<100> outputDoc;
 char strData[100];
 
 // wifi credentials
-// #define LOCAL_SSID "wifi"
-// #define LOCAL_PASS "password"
+#define LOCAL_SSID "wifi"
+#define LOCAL_PASS "password"
 
 //static IP address configuration 
 IPAddress local_IP(192,168,5,75);
@@ -156,7 +156,19 @@ void setup() {
   getAutoEnable();
   Serial.println("configuration loaded from EEPROM: ");
 
-  tC.duration = 2;
+  // testing
+    inputDoc.clear();
+  JsonArray hours = inputDoc.createNestedArray("hours");
+  // for (int i=0;i<3;i++) {
+  //   hours.add((i+1)*8);
+  // }
+  hours.add(2);
+  hours.add(0);
+  hours.add(0);
+  inputDoc["duration"] = 2;
+  inputDoc["gmt_offset"] = 8;
+  setTimingConfig();
+  getTimingConfig();
   printTimingConfig();
 
   // pins
@@ -204,16 +216,16 @@ void setup() {
     request->send(LittleFS, "/s.js", "text/javascript", false);});
   server.begin();
 
-  File file = LittleFS.open("/index.html", "r");
-  if(!file){
-    Serial.println("Failed to open file for reading");
-  }
+  // File file = LittleFS.open("/index.html", "r");
+  // if(!file){
+  //   Serial.println("Failed to open file for reading");
+  // }
   
-  Serial.println("File Content:");
-  while(file.available()){
-    Serial.write(file.read());
-  }
-  file.close();
+  // Serial.println("File Content:");
+  // while(file.available()){
+  //   Serial.write(file.read());
+  // }
+  // file.close();
 }
 
 void loop() {
@@ -225,6 +237,7 @@ void loop() {
   controlLED();
   checkButton();
   executeActionOnBtnPress();
+
 }
 
 void printWiFi() {
@@ -298,6 +311,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
     else if (commandType == "relay") {
       closeRelay();
     }
+    inputDoc.clear();
   }
 }
 

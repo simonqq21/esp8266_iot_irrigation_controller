@@ -28,6 +28,9 @@ void controlRelay() {
         relayState = 0;
         setLED(LED_BLINK);
     }
+    // Serial.print(millis() - timerStart);
+    // Serial.print(" >= ");
+    // Serial.println(timer);
     digitalWrite(RELAY_PIN, relayState);
 }
 
