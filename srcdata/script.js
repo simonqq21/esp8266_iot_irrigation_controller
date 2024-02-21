@@ -124,6 +124,7 @@ function toggleTimerEnable() {
     autoEnabled = !autoEnabled;
     let jsondata = {'type': 'auto',
         'auto_enabled': autoEnabled};
+    if (debug) {console.log(jsondata);}
     websocket.send(JSON.stringify(jsondata));
 }
 
@@ -144,7 +145,6 @@ function updateSettings() {
 close the relay for a specified amount of time 
 */
 function closeRelay() {
-    alert("relay close");
     setRelay(true);
     setTimeout(setRelay, 1000, false);
 }

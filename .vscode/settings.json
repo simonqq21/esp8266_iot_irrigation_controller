@@ -3,6 +3,16 @@
         "ostream": "cpp",
         "chrono": "cpp",
         "bitset": "cpp",
-        "ranges": "cpp"
+        "ranges": "cpp",
+        "array": "cpp",
+        "compare": "cpp",
+        "functional": "cpp",
+        "istream": "cpp",
+        "ratio": "cpp",
+        "tuple": "cpp",
+        "type_traits": "cpp",
+        "utility": "cpp",
+        "variant": "cpp",
+        "set": "cpp"
     }
 }

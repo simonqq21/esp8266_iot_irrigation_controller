@@ -15,4 +15,6 @@
 #define LED_ON 1
 #define LED_BLINK 2
 
+#define DEBUG 1
+
 #endif

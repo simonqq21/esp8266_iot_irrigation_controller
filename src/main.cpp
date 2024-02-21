@@ -280,35 +280,57 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
     
     //    deserialize the JSON into a JSON object
     DeserializationError error = deserializeJson(inputDoc, (char*)data); 
-    Serial.println((char*)data);
+
+    // Serial.println((char*) data);
     if (error) {
       Serial.print("deserializeJson failed: ");
       Serial.println(error.f_str());
     }
-    else 
-      Serial.println("deserializeJson success");
+    // else 
+    //   Serial.println("deserializeJson success");
       
     String commandType = inputDoc["type"];
+    // Serial.print("commandType=");
+    // Serial.println(commandType);
     // send status JSON
     if (commandType == "status") {
+      if (DEBUG) {
+        Serial.println("sending status");
+      }
       getAutoEnable();
       sendStatus();
     }
     // toggle the automatic relay timer 
     else if (commandType == "auto") {
+      if (DEBUG) {
+        Serial.print("set auto to ");
+        Serial.println(autoEnabled);
+      }
       setAutoEnable();
     }
     // send persistent settings JSON
     else if (commandType == "settings") {
+      if (DEBUG) {
+        Serial.println("sending settings");
+      }
       getTimingConfig();  
       sendTimingConfig();
     }
     // save persistent settings to EEPROM 
     else if (commandType == "chg_settings") {
+      if (DEBUG) {
+        Serial.println("set default settings to");
+        printTimingConfig();
+      }
       setTimingConfig();
     }
     // close the relay momentarily from user manual input 
     else if (commandType == "relay") {
+      if (DEBUG) {
+        Serial.print("closing relay for ");
+        Serial.print(tC.duration);
+        Serial.println("s");
+      }
       closeRelay();
     }
     inputDoc.clear();
