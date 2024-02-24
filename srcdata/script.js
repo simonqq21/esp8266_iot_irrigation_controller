@@ -160,6 +160,7 @@ function setRelay(state) {
     
 }
 
+// 
 // check if touch is inside the bounding box of the element
 // function isTouchInsideElement(event, element) {
 //     const rect = element.getBoundingClientRect();
@@ -170,6 +171,25 @@ function setRelay(state) {
 //         event.touches[0].clientY <= rect.bottom
 //     );
 // }
+
+function clickHour(event) {
+    let hour = $(event.target).text();
+    alert(hour);
+}
+
+function loadHour(hour) {
+    let status;
+    let byteIndex = hour / 8;
+    return status;
+}
+
+function loadHours() {
+
+}
+
+function setHour(hour, state) {
+
+}
 
 $(document).ready(function() {
     // initialize websocket 
@@ -184,6 +204,9 @@ $(document).ready(function() {
     });
     $("#closeRelayBtn").click(function() {
         closeRelay();
+    });
+    $(".hourBtn").click(function(event) {
+        clickHour(event);
     });
     // set the intervals here 
     setInterval(requestStatus, 500);
