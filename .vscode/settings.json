@@ -14,5 +14,6 @@
         "utility": "cpp",
         "variant": "cpp",
         "set": "cpp"
-    }
+    },
+    "cmake.configureOnOpen": false
 }

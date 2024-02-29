@@ -61,11 +61,12 @@ void setTimingConfig() {
 bool checkHour(int hour) {
   bool status;
   byte byteIndex = hour / 8; 
-  byte currByte = tC.hours[byteIndex]; 
-  byte offset = hour % 8; 
-  currByte = currByte >> offset;
-  currByte = currByte & 1; 
-  status = (currByte) ? true: false;
+  byte bitIndex = hour % 8; 
+  // byte currByte = tC.hours[byteIndex]; 
+  // currByte = currByte >> bitIndex;
+  // currByte = currByte & 1; 
+  // status = (currByte) ? true: false;
+  status = (tC.hours[byteIndex] >> bitIndex) & 1;
   return status;
 }
 

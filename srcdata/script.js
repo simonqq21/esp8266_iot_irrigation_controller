@@ -177,18 +177,31 @@ function clickHour(event) {
     alert(hour);
 }
 
+// load a single hour
 function loadHour(hour) {
-    let status;
     let byteIndex = hour / 8;
+    let bitIndex = hour % 8;
+    let status = (timingConfig.hours[byteIndex] >> bitIndex) & 1;
     return status;
 }
 
+// refresh all button states
 function loadHours() {
+    for (let i=0;i<24;i++) {
 
+    }
 }
 
 function setHour(hour, state) {
-
+    let byteIndex = hour / 8; 
+    let bitIndex = hour % 8;
+    let mask = 1 << bitIndex;
+    if (state) {
+        timingConfig.hours[byteIndex] = timingConfig.hours[byteIndex] | mask;
+    }
+    else {
+        timingConfig.hours[byteIndex] = timingConfig.hours[byteIndex] & !mask;
+    }
 }
 
 $(document).ready(function() {
@@ -199,17 +212,35 @@ $(document).ready(function() {
     // closeRelay();
 
     // set the callback functions here 
+    
+    // toggle timer enable 
     $("#masterSwitch").click(function() {
         toggleTimerEnable();
     });
+    // manually close the relay
     $("#closeRelayBtn").click(function() {
         closeRelay();
     });
+    // toggle each hour in the schedule
     $(".hourBtn").click(function(event) {
         clickHour(event);
     });
+    // set the watering duration every time the relay is closed
+    $("#intervalDuration").on('input', function() {
+
+    });
+    // adjust the GMT offset 
+    $("#GMTOffset").on('input', function() {
+
+    });
+    // save settings to the ESP
+    $("#saveBtn").click(function() {
+
+    });
+
     // set the intervals here 
     setInterval(requestStatus, 500);
     setInterval(requestTimingConfig, 10000);
 });
+
 

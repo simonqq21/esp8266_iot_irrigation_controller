@@ -53,7 +53,7 @@
     </div>
     <div id="intervalDurationDiv" style="display: flex; gap: 5px; align-items: center;">
         <label for="intervalDuration">Watering interval duration: </label>
-        <input type="range" id="intervalDuration" name="intervalDuration" class="range1" min="1" max="60" step="1" oninput="$('#intervalDurationDisplay').text($('#intervalDuration').val())">
+        <input type="range" id="intervalDuration" name="intervalDuration" class="range1" min="1" step="1" oninput="$('#intervalDurationDisplay').text($('#intervalDuration').val())">
         <p id="intervalDurationDisplay">0</p> <p>seconds</p>
     </div>
     <div id="GMTOffsetDiv">
@@ -61,7 +61,7 @@
         <input type="number" id="GMTOffset" name="GMTOffset" min="0" max="23" step="1">
     </div>
     <div id="saveButtonDiv">
-        <button>Save</button>
+        <button id="saveBtn" name="saveBtn">Save</button>
         <button id="closeRelayBtn" name="closeRelayBtn">Activate pump</button>
     </div>
 </body>
