@@ -53,7 +53,7 @@
     </div>
     <div id="intervalDurationDiv" style="display: flex; gap: 5px; align-items: center;">
         <label for="intervalDuration">Watering interval duration: </label>
-        <input type="range" id="intervalDuration" name="intervalDuration" class="range1" min="1" step="1" oninput="$('#intervalDurationDisplay').text($('#intervalDuration').val())">
+        <input type="range" id="intervalDuration" name="intervalDuration" class="range1" min="1" max="3600" step="1" oninput="$('#intervalDurationDisplay').text($('#intervalDuration').val())">
         <p id="intervalDurationDisplay">0</p> <p>seconds</p>
     </div>
     <div id="GMTOffsetDiv">

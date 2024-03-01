@@ -30,8 +30,9 @@ button {
     flex-wrap: wrap;
     gap: 20px;
 }
-.irrigationScheduleRow > button {
+.hourBtn {
     min-width: 50px;
     min-height: 50px;
+    background-color: blue;
     /* flex-grow: 3; */
 }

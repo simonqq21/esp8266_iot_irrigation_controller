@@ -30,8 +30,16 @@ button {
     flex-wrap: wrap;
     gap: 20px;
 }
-.irrigationScheduleRow > button {
+.timeBtn {
     min-width: 50px;
     min-height: 50px;
     /* flex-grow: 3; */
+}
+
+.enabledBtn {
+    background-color: #00ff90;
+}
+
+.disabledBtn {
+    background-color: #ff0000;
 }

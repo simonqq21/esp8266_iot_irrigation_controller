@@ -25,35 +25,35 @@
         <h2>Daily watering schedule</h2>
         <p>Click on a button to toggle the respective hours of the day.</p>
         <div class="irrigationScheduleRow">
-            <button>0</button>
-            <button>1</button>
-            <button>2</button>
-            <button>3</button>
-            <button>4</button>
-            <button>5</button>
-            <button>6</button>
-            <button>7</button>
-            <button>8</button>
-            <button>9</button>
-            <button>10</button>
-            <button>11</button>
-            <button>12</button>
-            <button>13</button>
-            <button>14</button>
-            <button>15</button>
-            <button>16</button>
-            <button>17</button>
-            <button>18</button>
-            <button>19</button>
-            <button>20</button>
-            <button>21</button>
-            <button>22</button>
-            <button>23</button>
+            <button class="timeBtn">0</button>
+            <button class="timeBtn">1</button>
+            <button class="timeBtn">2</button>
+            <button class="timeBtn">3</button>
+            <button class="timeBtn">4</button>
+            <button class="timeBtn">5</button>
+            <button class="timeBtn">6</button>
+            <button class="timeBtn">7</button>
+            <button class="timeBtn">8</button>
+            <button class="timeBtn">9</button>
+            <button class="timeBtn">10</button>
+            <button class="timeBtn">11</button>
+            <button class="timeBtn">12</button>
+            <button class="timeBtn">13</button>
+            <button class="timeBtn">14</button>
+            <button class="timeBtn">15</button>
+            <button class="timeBtn">16</button>
+            <button class="timeBtn">17</button>
+            <button class="timeBtn">18</button>
+            <button class="timeBtn">19</button>
+            <button class="timeBtn">20</button>
+            <button class="timeBtn">21</button>
+            <button class="timeBtn">22</button>
+            <button class="timeBtn">23</button>
         </div>
     </div>
     <div id="intervalDurationDiv" style="display: flex; gap: 5px; align-items: center;">
         <label for="intervalDuration">Watering interval duration: </label>
-        <input type="range" id="intervalDuration" name="intervalDuration" class="range1" min="1" max="60" step="1" oninput="$('#intervalDurationDisplay').text($('#intervalDuration').val())">
+        <input type="range" id="intervalDuration" name="intervalDuration" class="range1" min="1" max="3600" step="1" oninput="$('#intervalDurationDisplay').text($('#intervalDuration').val())">
         <p id="intervalDurationDisplay">0</p> <p>seconds</p>
     </div>
     <div id="GMTOffsetDiv">
@@ -61,7 +61,7 @@
         <input type="number" id="GMTOffset" name="GMTOffset" min="0" max="23" step="1">
     </div>
     <div id="saveButtonDiv">
-        <button>Save</button>
+        <button id="saveBtn" name="saveBtn">Save</button>
         <button id="closeRelayBtn" name="closeRelayBtn">Activate pump</button>
     </div>
 </body>

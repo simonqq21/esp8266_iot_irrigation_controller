@@ -54,6 +54,7 @@ clicking on the activate pump button activates the pump momentarily
 */
 
 let gateway = `ws://${window.location.hostname}:5555/ws`; 
+// let gateway = `ws://192.168.5.75:5555/ws`; 
 let websocket;  
 let debug = true; 
 
@@ -175,6 +176,7 @@ function setRelay(state) {
 function clickHour(event) {
     let hour = $(event.target).text();
     alert(hour);
+    $(event.target).addClass('enabledBtn');
 }
 
 // load a single hour
@@ -182,7 +184,12 @@ function loadHour(hour) {
     let byteIndex = hour / 8;
     let bitIndex = hour % 8;
     let status = (timingConfig.hours[byteIndex] >> bitIndex) & 1;
-    return status;
+    if (status) {
+
+    }
+    else {
+        
+    }
 }
 
 // refresh all button states
@@ -222,7 +229,7 @@ $(document).ready(function() {
         closeRelay();
     });
     // toggle each hour in the schedule
-    $(".hourBtn").click(function(event) {
+    $(".timeBtn").click(function(event) {
         clickHour(event);
     });
     // set the watering duration every time the relay is closed
@@ -231,7 +238,7 @@ $(document).ready(function() {
     });
     // adjust the GMT offset 
     $("#GMTOffset").on('input', function() {
-
+        setGMTOffset();
     });
     // save settings to the ESP
     $("#saveBtn").click(function() {
