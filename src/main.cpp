@@ -23,7 +23,7 @@ main - handle websocket client
 */
 
 // transient settings
-bool* hours;
+bool* timeslots;
 bool relay = false; 
 
 // EEPROM 
@@ -50,50 +50,6 @@ extern NTPClient timeClient;
 //   "Saturday", 
 //   "Sunday"
 // };
-/* JSON formats:
- - From browser to MCU 
-   - browser request status update from MCU 
-  {
-    'type': 'status'
-  }
-  - Toggle the automatic relay timer. Enabling the automatic relay timer will enable
-  the daily relay hours, and disabling the automatic relay timer will simply 
-  disable the daily relay hours so the only time the relay closes is if the user
-  manually toggles the momentary relay button on the webpage or the physical button.
-  This command is sent by the browser right away after the user toggles the automatic
-  toggle.
-  {
-    'type': 'auto',
-    'auto_enabled': bool
-  }
-  - sending updated settings from browser to MCU
-  {
-    'type': 'chg_settings',
-    'hours': array of 3 bytes representing the three bytes stored in EEPROM,
-    'duration': int from 0 to 60,
-    'gmt_offset': int from -12 to 12,
-  }
-   - send command from browser to enable the relay momentarily for the saved duration.
-  {
-    'type': 'relay',
-    'relay_status': bool 
-  }
-
- - From MCU to browser 
-  - sending relay status from MCU to browser
-  {
-    'type': 'status',
-    'auto_enabled': bool,
-    'relay_status': bool
-  }
-   - sending current settings from MCU to browser
-  {
-    'type': 'settings', 
-    'hours': array of 3 bytes representing the three bytes stored in EEPROM,
-    'duration': int from 0 to 60,
-    'gmt_offset': int from -12 to 12,
-  }
-*/
 
 // async web server
 AsyncWebServer server(5555); 
@@ -128,15 +84,6 @@ void sendTimingConfig();
 
 void setup() {
   Serial.begin(115200); 
-
-  // testing 
-  // inputDoc.clear();
-  // JsonArray hours = inputDoc.createNestedArray("hours");
-  // for (int i=0;i<3;i++) {
-  //   hours.add((i+1)*8);
-  // }
-  // inputDoc["duration"] = 30;
-  // inputDoc["gmt_offset"] = 8;
   
   // littleFS 
   if (!LittleFS.begin()) {
@@ -158,18 +105,6 @@ void setup() {
   getAutoEnable();
   Serial.println("configuration loaded from EEPROM: ");
 
-  // testing
-    inputDoc.clear();
-  JsonArray hours = inputDoc.createNestedArray("hours");
-  // for (int i=0;i<3;i++) {
-  //   hours.add((i+1)*8);
-  // }
-  hours.add(2);
-  hours.add(0);
-  hours.add(0);
-  inputDoc["duration"] = 2;
-  inputDoc["gmt_offset"] = 8;
-  setTimingConfig();
   getTimingConfig();
   printTimingConfig();
 
@@ -359,9 +294,9 @@ void sendStatus() {
 void sendTimingConfig() {
   outputDoc.clear(); 
   outputDoc["type"] = "settings";
-  JsonArray hours = outputDoc.createNestedArray("hours");
+  JsonArray timeslots = outputDoc.createNestedArray("timeslots");
   for (int i=0;i<3;i++) {
-    hours.add(tC.hours[i]);
+    timeslots.add(tC.timeslots[i]);
   }
   outputDoc["duration"] = tC.duration;
   outputDoc["gmt_offset"] = tC.gmtOffset;

@@ -13,9 +13,9 @@ timingconfig tC;
 bool autoEnabled;
 
 void printTimingConfig() {
-  Serial.print("hours bytes = ");
+  Serial.print("timeslots bytes = ");
   for (int i=0;i<3;i++) {
-    Serial.print(tC.hours[i]);  
+    Serial.print(tC.timeslots[i]);  
     if (i<2)
       Serial.print(", ");
     else Serial.print(" ");
@@ -48,7 +48,7 @@ void getTimingConfig() {
 // set the timing configuration from JSON and put it into the EEPROM
 void setTimingConfig() {
   for (int i=0;i<3;i++) {
-    tC.hours[i] = inputDoc["hours"][i];
+    tC.timeslots[i] = inputDoc["timeslots"][i];
   }
   tC.duration = inputDoc["duration"];
   tC.gmtOffset = inputDoc["gmt_offset"];
@@ -57,53 +57,53 @@ void setTimingConfig() {
   EEPROM.commit();
 }
 
-// check the state of a certain hour
-bool checkHour(int hour) {
+// check the state of a certain timeslot
+bool checkTimeslot(int timeslot) {
   bool status;
-  byte byteIndex = hour / 8; 
-  byte bitIndex = hour % 8; 
-  // byte currByte = tC.hours[byteIndex]; 
+  byte byteIndex = timeslot / 8; 
+  byte bitIndex = timeslot % 8; 
+  // byte currByte = tC.timeslots[byteIndex]; 
   // currByte = currByte >> bitIndex;
   // currByte = currByte & 1; 
   // status = (currByte) ? true: false;
-  status = (tC.hours[byteIndex] >> bitIndex) & 1;
+  status = (tC.timeslots[byteIndex] >> bitIndex) & 1;
   return status;
 }
 
-// return a bool array with 24 elements representing the truth state of each hour
+// return a bool array with 24 elements representing the truth state of each timeslot
 // in a day
-bool* getActiveHours() {
-  static bool hours[24];
-  // reset the hours array
+bool* getActiveTimeslots() {
+  static bool timeslots[24];
+  // reset the timeslots array
   for (int h=0;h<24;h++) {
-    hours[h] = 0;
+    timeslots[h] = 0;
   }
-  // check each bit in the hours bytes then load it into the bool hours array 
+  // check each bit in the timeslots bytes then load it into the bool timeslots array 
   for (int h=0;h<24;h++) { 
-    hours[h] = checkHour(h);
+    timeslots[h] = checkTimeslot(h);
   }
-  return hours;
+  return timeslots;
 }
 
-/* set the hour in the timing configuration to the specified state. 
+/* set the timeslot in the timing configuration to the specified state. 
 args:
   tC - timingConfig object 
-  hour - hour of the day from 0-24 
+  timeslot - timeslot of the day from 0-24 
   newState - 0 for disable and 1 for enable 
 */ 
-void setHour(int hour, bool newState) {
-  int byteIndex = hour / 8;
-  int bitIndex = hour % 8; 
+void setTimeslot(int timeslot, bool newState) {
+  int byteIndex = timeslot / 8;
+  int bitIndex = timeslot % 8; 
   int mask = 1 << bitIndex; 
   Serial.print("mask = ");
-  // if enabling the hour
+  // if enabling the timeslot
   if (newState) {
-    tC.hours[byteIndex] = tC.hours[byteIndex] | mask;
+    tC.timeslots[byteIndex] = tC.timeslots[byteIndex] | mask;
   }
-  // else disabling the hour
+  // else disabling the timeslot
   else {
     mask = ~mask;
-    tC.hours[byteIndex] = tC.hours[byteIndex] & mask;
+    tC.timeslots[byteIndex] = tC.timeslots[byteIndex] & mask;
   }
   Serial.println(mask);
 }
@@ -113,10 +113,10 @@ void setDuration(int newDuration) {
   tC.duration = newDuration;
 }
 
-// macro function to clear all hours in the hours and reset interval to 0
-void clearAllHours() {
+// macro function to clear all timeslots in the timeslots and reset interval to 0
+void clearAllTimeslots() {
   setDuration(0);
   for (int h=0; h<24; h++) {
-    setHour(h, 0);
+    setTimeslot(h, 0);
   }
 }

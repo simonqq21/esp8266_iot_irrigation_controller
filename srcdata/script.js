@@ -4,55 +4,6 @@ web browser interaction
 clicking on the activate pump button activates the pump momentarily
 */
 
-/* JSON formats:
- - From browser to MCU 
-   - browser request status update from MCU 
-  {
-    'type': 'status'
-  }
-   - browser request settings from MCU 
-   {
-    'type': 'settings'
-   }
-  - Toggle the automatic relay timer. Enabling the automatic relay timer will enable
-  the daily relay hours, and disabling the automatic relay timer will simply 
-  disable the daily relay hours so the only time the relay closes is if the user
-  manually toggles the momentary relay button on the webpage or the physical button.
-  This command is sent by the browser right away after the user toggles the automatic
-  toggle.
-  {
-    'type': 'auto',
-    'auto_enabled': bool
-  }
-  - sending updated settings from browser to MCU
-  {
-    'type': 'chg_settings',
-    'hours': array of 3 bytes representing the three bytes stored in EEPROM,
-    'duration': int from 0 to 60,
-    'gmt_offset': int from -12 to 12,
-  }
-   - send command from browser to enable the relay momentarily for the saved duration.
-  {
-    'type': 'relay',
-    'relay_status': bool 
-  }
-
- - From MCU to browser 
-  - sending relay status from MCU to browser
-  {
-    'type': 'status',
-    'auto_enabled': bool,
-    'relay_status': bool
-  }
-   - sending current settings from MCU to browser
-  {
-    'type': 'settings', 
-    'hours': array of 3 bytes representing the three bytes stored in EEPROM,
-    'duration': int from 0 to 60,
-    'gmt_offset': int from -12 to 12,
-  }
-*/
-
 let gateway = `ws://${window.location.hostname}:5555/ws`; 
 // let gateway = `ws://192.168.5.75:5555/ws`; 
 let websocket;  
@@ -61,7 +12,7 @@ let debug = true;
 // status variables 
 let autoEnabled, relayStatus;
 let timingConfig = {
-    'hours': [0,0,0],
+    'timeslots': [0,0,0],
     'duration': 0,
     'gmt_offset': 8
 }
@@ -132,11 +83,11 @@ function toggleTimerEnable() {
 // send updated settings to the MCU 
 function updateSettings() {
     // get the various settings from the DOM
-    let hours;
+    let timeslots;
     let duration;
     let gmtOffset;
     let jsondata = {'type': 'chg_settings',
-        'hours': hours,
+        'timeslots': timeslots,
         'duration': duration,
         'gmt_offset': gmtOffset}
     websocket.send(JSON.stringify(jsondata));
@@ -173,17 +124,17 @@ function setRelay(state) {
 //     );
 // }
 
-function clickHour(event) {
-    let hour = $(event.target).text();
-    alert(hour);
+function clickTimeslot(event) {
+    let timeslot = $(event.target).text();
+    alert(timeslot);
     $(event.target).addClass('enabledBtn');
 }
 
-// load a single hour
-function loadHour(hour) {
-    let byteIndex = hour / 8;
-    let bitIndex = hour % 8;
-    let status = (timingConfig.hours[byteIndex] >> bitIndex) & 1;
+// load a single timeslot
+function loadTimeslot(timeslot) {
+    let byteIndex = timeslot / 8;
+    let bitIndex = timeslot % 8;
+    let status = (timingConfig.timeslots[byteIndex] >> bitIndex) & 1;
     if (status) {
 
     }
@@ -193,21 +144,21 @@ function loadHour(hour) {
 }
 
 // refresh all button states
-function loadHours() {
+function loadTimeslots() {
     for (let i=0;i<24;i++) {
 
     }
 }
 
-function setHour(hour, state) {
-    let byteIndex = hour / 8; 
-    let bitIndex = hour % 8;
+function setTimeslot(timeslot, state) {
+    let byteIndex = timeslot / 8; 
+    let bitIndex = timeslot % 8;
     let mask = 1 << bitIndex;
     if (state) {
-        timingConfig.hours[byteIndex] = timingConfig.hours[byteIndex] | mask;
+        timingConfig.timeslots[byteIndex] = timingConfig.timeslots[byteIndex] | mask;
     }
     else {
-        timingConfig.hours[byteIndex] = timingConfig.hours[byteIndex] & !mask;
+        timingConfig.timeslots[byteIndex] = timingConfig.timeslots[byteIndex] & !mask;
     }
 }
 
@@ -228,9 +179,9 @@ $(document).ready(function() {
     $("#closeRelayBtn").click(function() {
         closeRelay();
     });
-    // toggle each hour in the schedule
+    // toggle each timeslot in the schedule
     $(".timeBtn").click(function(event) {
-        clickHour(event);
+        clickTimeslot(event);
     });
     // set the watering duration every time the relay is closed
     $("#intervalDuration").on('input', function() {
@@ -250,4 +201,17 @@ $(document).ready(function() {
     setInterval(requestTimingConfig, 10000);
 });
 
+/*
+15 minute intervals 
+60/15*24 = 96 bits - 12 bytes
+bit can range from 0-95 
+7:30
+(7+30/60)/24 = 0.3125*96=30th bit
+12:00
+(12+0/60)/24=0.5*96=48th bit 
+00:00
+0/24=0*96=0th bit 
+23:50 
+floor((23+50/60)/24*96)=95
+*/
 
