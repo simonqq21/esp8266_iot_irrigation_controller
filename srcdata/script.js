@@ -6,7 +6,7 @@ clicking on the activate pump button activates the pump momentarily
 
 let gateway = `ws://${window.location.hostname}:5555/ws`; 
 // let gateway = `ws://192.168.5.75:5555/ws`; 
-let websocket;  
+let websocket
 let debug = true; 
 
 // status variables 
@@ -124,29 +124,55 @@ function setRelay(state) {
 //     );
 // }
 
-function clickTimeslot(event) {
-    let timeslot = $(event.target).text();
-    alert(timeslot);
-    $(event.target).addClass('enabledBtn');
-}
-
-// load a single timeslot
-function loadTimeslot(timeslot) {
-    let byteIndex = timeslot / 8;
-    let bitIndex = timeslot % 8;
-    let status = (timingConfig.timeslots[byteIndex] >> bitIndex) & 1;
-    if (status) {
-
+function loadTimeslotState(timeslot) {
+    // let timeslot = parseInt($(clickedTimeslot).find('.tIndex').text());
+    let clickedTimeslot = $(`#timeBtn${timeslot}`);
+    let tState = $(clickedTimeslot).find('.tState');
+    let curTimeslotVal = checkTimeslot(timeslot);
+    if (curTimeslotVal) {
+        $(clickedTimeslot).addClass('enabledBtn');
+        $(clickedTimeslot).removeClass('disabledBtn');
+        $(tState).text("On");
     }
     else {
-        
+        $(clickedTimeslot).addClass('disabledBtn');
+        $(clickedTimeslot).removeClass('enabledBtn');
+        $(tState).text("Off");
     }
 }
 
 // refresh all button states
-function loadTimeslots() {
+function loadAllTimeslotStates() {
     for (let i=0;i<24;i++) {
+        loadTimeslotState(i);
+    }
+}
 
+function clickTimeslot(event) {
+    let clickedTimeslot = $(event.currentTarget);
+    let timeslot = parseInt($(clickedTimeslot).find('.tIndex').text());
+    let curTimeslotVal = checkTimeslot(timeslot);
+    setTimeslot(timeslot, !curTimeslotVal);
+    loadTimeslotState(timeslot);
+}
+
+function checkTimeslot(timeslot) {
+    let byteIndex = timeslot / 8;
+    let bitIndex = timeslot % 8;
+    let status = (timingConfig.timeslots[byteIndex] >> bitIndex) & 1;
+    return status;
+}
+
+function createTimeslotButtons() {
+    for (let i=0;i<24;i++) {
+        let newTimeslotBtn = $('<button>', {id: `timeBtn${i}`, class: "timeBtn"});
+        let newTIndex = $('<span>', {class: "tIndex"});
+        let newTState = $('<span>', {class: "tState"});
+        $(newTIndex).text(i);
+        $(newTState).text('Off');
+        $(newTimeslotBtn).append(newTIndex);
+        $(newTimeslotBtn).append(newTState);
+        $('.irrigationScheduleRow').append(newTimeslotBtn);
     }
 }
 
@@ -162,7 +188,17 @@ function setTimeslot(timeslot, state) {
     }
 }
 
+function setClosedDuration() {
+
+}
+
+function setGMTOffset() {
+
+}
+
 $(document).ready(function() {
+    createTimeslotButtons();
+
     // initialize websocket 
     initWebSocket();
 
@@ -185,16 +221,21 @@ $(document).ready(function() {
     });
     // set the watering duration every time the relay is closed
     $("#intervalDuration").on('input', function() {
-
+        setI
+        alert($("#intervalDuration").val());
     });
     // adjust the GMT offset 
     $("#GMTOffset").on('input', function() {
+        alert($("#intervalDuration").val());
         setGMTOffset();
     });
     // save settings to the ESP
     $("#saveBtn").click(function() {
 
     });
+
+    // load all initial timeslot states
+    loadAllTimeslotStates();
 
     // set the intervals here 
     setInterval(requestStatus, 500);
