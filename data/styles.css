@@ -23,16 +23,27 @@ button {
     min-width: 50px;
     min-height: 50px;
     border-radius: 50%;
-    background-color: red;
 }
 .irrigationScheduleRow {
     display: flex; 
     flex-wrap: wrap;
     gap: 20px;
 }
-.hourBtn {
+.timeBtn {
     min-width: 50px;
     min-height: 50px;
-    background-color: blue;
+    display: inline-block;
     /* flex-grow: 3; */
+}
+
+.timeBtn > span {
+    display: block;
+}
+
+.enabledBtn {
+    background-color: #00ff90;
+}
+
+.disabledBtn {
+    background-color: #ff0000;
 }

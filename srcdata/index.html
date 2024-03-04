@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="styles.css">
 
     <script type="text/javascript" src="jquery.js"></script>
-    <script type="text/javascript" src="script.js"></script>
+    <script type="text/javascript" src="s.js"></script>
 </head>
 <body>
     <header>
@@ -18,7 +18,6 @@
     </div>
     <div id="irrigationStatusDiv">
         <h2>Irrigation status: </h2>
-        <label for=""></label>
         <div id="irrigationStatusIndicator" name=""></div>
     </div>
     <div id="irrigationScheduleDiv">
@@ -41,12 +40,11 @@
     </div>
     <div id="maxIntervalDurationDiv" style="display: flex; gap: 5px; align-items: center;">
         <label for="maxIntervalDuration">Max watering interval duration: </label>
-        <input type="range" id="maxIntervalDuration" name="maxIntervalDuration" class="range1" 
-            min="1" max="3600" step="1">
-        <p id="maxIntervalDurationDisplay">0</p> <p>seconds</p>
+        <input type="number" id="maxIntervalDuration" name="maxIntervalDuration">
+        <p> seconds</p>
     </div>
     <div id="GMTOffsetDiv">
-        <label for="">Local GMT offset: </label>
+        <label for="GMTOffset">Local GMT offset: </label>
         <input type="number" id="GMTOffset" name="GMTOffset" min="0" max="23" step="1">
     </div>
     <div id="saveButtonDiv">

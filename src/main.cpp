@@ -24,7 +24,7 @@ main - handle websocket client
 
 // transient settings
 bool* timeslots;
-bool relay = false; 
+extern bool relayState;
 
 // EEPROM 
 extern unsigned int configAddr, autoEnableAddr;
@@ -61,6 +61,8 @@ char strData[100];
 // wifi credentials
 #define LOCAL_SSID "wifi"
 #define LOCAL_PASS "password"
+#define LOCAL_SSID "QUE-STARLINK"
+#define LOCAL_PASS "Quefamily01259"
 
 //static IP address configuration 
 IPAddress local_IP(192,168,5,75);
@@ -283,7 +285,7 @@ void sendStatus() {
   outputDoc.clear();
   outputDoc["type"] = "status";
   outputDoc["auto_enabled"] = autoEnabled;
-  outputDoc["relay_status"] = relay;
+  outputDoc["relay_status"] = relayState;
   serializeJson(outputDoc, strData);
   ws.textAll(strData);
 }

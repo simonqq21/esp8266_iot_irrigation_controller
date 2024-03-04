@@ -17,6 +17,10 @@ let timingConfig = {
     'gmt_offset': 8
 }
 
+/*
+################################################################################
+Websocket related functions
+*/
 function initWebSocket() {
     // alert('Websocket initializing');
     websocket = new WebSocket(gateway);
@@ -40,23 +44,16 @@ function onMessage(event) {
     // console.log(event.data);
     msg = JSON.parse(event.data);
     let msgType = msg['type'];
-    if (debug) {console.log(msgType);}
-    // // update status 
-    // if (type == 'status') {
-
-    // }
-    // // update settings
-    // else if (type == 'settings') {
-
-    // }
+    if (debug) {console.log(msg);}
+    // update status 
+    if (msgType == 'status') {
+        receiveStatus(msg);
+    }
+    // update settings
+    else if (msgType == 'settings') {
+        receiveSettings(msg);   
+    }
 } 
-
-// check if device has a touchscreen
-function isTouchEnabled() {
-    return ('ontouchstart' in window) || 
-        (navigator.maxTouchPoints > 0) || 
-        (navigator.msMaxTouchPoints > 0);
-}
 
 // request status from the MCU
 async function requestStatus() {
@@ -97,26 +94,15 @@ async function toggleTimerEnable() {
 // send updated settings to the MCU 
 async function updateSettings() {
     // get the various settings from the DOM
-    let timeslots;
-    let duration;
-    let gmtOffset;
     let jsondata = {'type': 'chg_settings',
-        'timeslots': timeslots,
-        'duration': duration,
-        'gmt_offset': gmtOffset};
+        'timeslots': timingConfig.timeslots,
+        'duration': timingConfig.duration,
+        'gmt_offset': timingConfig.gmt_offset};
     try {
         await websocket.send(JSON.stringify(jsondata));
     } catch (error) {
         console.log("updateSettings - failed to connect to websockets");
     }
-}
-
-/* 
-close the relay for a specified amount of time 
-*/
-function closeRelay() {
-    setRelay(true);
-    setTimeout(setRelay, 1000, false);
 }
 
 /*
@@ -133,6 +119,37 @@ async function setRelay(state) {
     }
 }
 
+/* 
+close the relay for a specified amount of time 
+*/
+function closeRelay() {
+    setRelay(true);
+    setTimeout(setRelay, timingConfig.duration, false);
+}
+
+// check if device has a touchscreen
+function isTouchEnabled() {
+    return ('ontouchstart' in window) || 
+        (navigator.maxTouchPoints > 0) || 
+        (navigator.msMaxTouchPoints > 0);
+}
+
+function receiveStatus(jsonMsg) {
+    autoEnabled = jsonMsg["auto_enabled"];
+    relayStatus = jsonMsg["relay_status"];
+    loadRelayStatus();
+    loadTimerEnableStatus();
+}
+
+function receiveSettings(jsonMsg) {
+    timingConfig.timeslots = jsonMsg["timeslots"];
+    timingConfig.duration = jsonMsg["duration"];
+    timingConfig.gmt_offset = jsonMsg["gmt_offset"]; 
+    loadAllTimeslotsDisplay();
+    loadDurationDisplay();
+    loadGMTOffset();
+}
+
 // 
 // check if touch is inside the bounding box of the element
 // function isTouchInsideElement(event, element) {
@@ -145,6 +162,27 @@ async function setRelay(state) {
 //     );
 // }
 
+/*
+################################################################################
+UI creator functions
+*/
+function createTimeslotButtons() {
+    for (let i=0;i<24;i++) {
+        let newTimeslotBtn = $('<button>', {id: `timeBtn${i}`, class: "timeBtn"});
+        let newTIndex = $('<span>', {class: "tIndex"});
+        let newTState = $('<span>', {class: "tState"});
+        $(newTIndex).text(i);
+        $(newTState).text('Off');
+        $(newTimeslotBtn).append(newTIndex);
+        $(newTimeslotBtn).append(newTState);
+        $('.irrigationScheduleRow').append(newTimeslotBtn);
+    }
+}
+
+/*
+################################################################################
+UI updater functions
+*/
 // load all timeslots and display on the webpage
 function loadAllTimeslotsDisplay() {
     for (let i=0;i<24;i++) {
@@ -187,19 +225,6 @@ function checkTimeslot(timeslot) {
     return status;
 }
 
-function createTimeslotButtons() {
-    for (let i=0;i<24;i++) {
-        let newTimeslotBtn = $('<button>', {id: `timeBtn${i}`, class: "timeBtn"});
-        let newTIndex = $('<span>', {class: "tIndex"});
-        let newTState = $('<span>', {class: "tState"});
-        $(newTIndex).text(i);
-        $(newTState).text('Off');
-        $(newTimeslotBtn).append(newTIndex);
-        $(newTimeslotBtn).append(newTState);
-        $('.irrigationScheduleRow').append(newTimeslotBtn);
-    }
-}
-
 function setTimeslot(timeslot, state) {
     let byteIndex = parseInt(timeslot / 8); 
     let bitIndex = parseInt(timeslot % 8);
@@ -213,15 +238,14 @@ function setTimeslot(timeslot, state) {
     }
 }
 
-function setDuration() {
-    let newDuration = $("#intervalDuration").val(); 
-    timingConfig.duration = newDuration; 
-    // alert(newDuration);
+function setDuration(duration) {
+    console.log('set duration');
+    timingConfig.duration = duration; 
+    refreshDurationDisplay();
 }
 
-function setGMTOffset() {
-    let newGMTOffset = $("#GMTOffset").val();
-    timingConfig.gmt_offset = newGMTOffset;
+function setGMTOffset(offset) {
+    timingConfig.gmt_offset = offset;
     // alert(timingConfig.gmt_offset);
 }
 
@@ -233,6 +257,8 @@ function loadAllElements() {
     loadDurationDisplay();
     // loadMaxDurationDisplay();
     loadGMTOffset();
+    refreshDurationDisplay();
+    refreshMaxDurationDisplay();
 }
 
 function loadTimerEnableStatus() {
@@ -272,7 +298,15 @@ function refreshDurationDisplay() {
 }
 
 function refreshMaxDurationDisplay() {
-    $("#maxIntervalDurationDisplay").val($("#maxIntervalDuration").val());
+    let maxDurationVal = parseInt($("#maxIntervalDuration").val());
+    let curDuration = timingConfig.duration;
+
+    $('#intervalDuration').attr('max', maxDurationVal);
+
+    if (curDuration > maxDurationVal) {
+        setDuration(maxDurationVal);
+        loadDurationDisplay();
+    }
 }
 
 $(document).ready(function() {
@@ -300,7 +334,7 @@ $(document).ready(function() {
     });
     // set the watering duration every time the relay is closed
     $("#intervalDuration").on('change', function() {
-        setDuration();
+        setDuration($("#intervalDuration").val());
     });
     // set the interval duration 
     $("#intervalDuration").on('input', function() {
@@ -308,16 +342,15 @@ $(document).ready(function() {
     });
     // set the maximum interval duration 
     $("#maxIntervalDuration").on('change', function() {
-        $('#intervalDuration').attr('max', $("#maxIntervalDuration").val());
-        setDuration();
+        refreshMaxDurationDisplay();
     });
     // adjust the GMT offset 
     $("#GMTOffset").on('change', function() {
-        setGMTOffset();
+        setGMTOffset($("#GMTOffset").val());
     });
     // save settings to the ESP
     $("#saveBtn").click(function() {
-
+        updateSettings();
     });
 
     loadAllElements();

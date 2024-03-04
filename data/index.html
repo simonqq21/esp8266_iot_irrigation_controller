@@ -13,51 +13,38 @@
         <h1>ESP8266 IoT Irrigation Controller Web Interface</h1>
     </header>
     <div id="masterSwitchDiv">
-        <label for="masterSwitch">Enable timer: </label>
-        <button id="masterSwitch" name="masterSwitch">Enabled</button>
+        <label for="timerEnable">Enable timer: </label>
+        <button id="timerEnable" name="timerEnable">Enabled</button>
     </div>
     <div id="irrigationStatusDiv">
         <h2>Irrigation status: </h2>
-        <label for=""></label>
         <div id="irrigationStatusIndicator" name=""></div>
     </div>
     <div id="irrigationScheduleDiv">
         <h2>Daily watering schedule</h2>
-        <p>Click on a button to toggle the respective hours of the day.</p>
+        <p>Click on a button to toggle the respective timeslots of the day.</p>
         <div class="irrigationScheduleRow">
-            <button class="hourBtn">0</button>
-            <button class="hourBtn">1</button>
-            <button class="hourBtn">2</button>
-            <button class="hourBtn">3</button>
-            <button class="hourBtn">4</button>
-            <button class="hourBtn">5</button>
-            <button class="hourBtn">6</button>
-            <button class="hourBtn">7</button>
-            <button class="hourBtn">8</button>
-            <button class="hourBtn">9</button>
-            <button class="hourBtn">10</button>
-            <button class="hourBtn">11</button>
-            <button class="hourBtn">12</button>
-            <button class="hourBtn">13</button>
-            <button class="hourBtn">14</button>
-            <button class="hourBtn">15</button>
-            <button class="hourBtn">16</button>
-            <button class="hourBtn">17</button>
-            <button class="hourBtn">18</button>
-            <button class="hourBtn">19</button>
-            <button class="hourBtn">20</button>
-            <button class="hourBtn">21</button>
-            <button class="hourBtn">22</button>
-            <button class="hourBtn">23</button>
+            <!-- 
+            Generated in javascript 
+            <button class="timeBtn">
+                <span class="tIndex">0</span>
+                <span class="tState">Off</span>    
+            </button> -->
         </div>
     </div>
     <div id="intervalDurationDiv" style="display: flex; gap: 5px; align-items: center;">
         <label for="intervalDuration">Watering interval duration: </label>
-        <input type="range" id="intervalDuration" name="intervalDuration" class="range1" min="1" max="3600" step="1" oninput="$('#intervalDurationDisplay').text($('#intervalDuration').val())">
+        <input type="range" id="intervalDuration" name="intervalDuration" class="range1" 
+            min="1" max="3600" step="1">
         <p id="intervalDurationDisplay">0</p> <p>seconds</p>
     </div>
+    <div id="maxIntervalDurationDiv" style="display: flex; gap: 5px; align-items: center;">
+        <label for="maxIntervalDuration">Max watering interval duration: </label>
+        <input type="number" id="maxIntervalDuration" name="maxIntervalDuration">
+        <p> seconds</p>
+    </div>
     <div id="GMTOffsetDiv">
-        <label for="">Local GMT offset: </label>
+        <label for="GMTOffset">Local GMT offset: </label>
         <input type="number" id="GMTOffset" name="GMTOffset" min="0" max="23" step="1">
     </div>
     <div id="saveButtonDiv">
