@@ -61,8 +61,6 @@ char strData[100];
 // wifi credentials
 #define LOCAL_SSID "wifi"
 #define LOCAL_PASS "password"
-#define LOCAL_SSID "QUE-STARLINK"
-#define LOCAL_PASS "Quefamily01259"
 
 //static IP address configuration 
 IPAddress local_IP(192,168,5,75);

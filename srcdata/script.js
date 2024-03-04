@@ -12,7 +12,7 @@ let debug = true;
 // status variables 
 let autoEnabled, relayStatus;
 let timingConfig = {
-    'timeslots': [0,0,0],
+    'timeslots': [2,0,0],
     'duration': 0,
     'gmt_offset': 8
 }
@@ -59,29 +59,43 @@ function isTouchEnabled() {
 }
 
 // request status from the MCU
-function requestStatus() {
+async function requestStatus() {
     let jsondata = {'type': 'status'}
-    websocket.send(JSON.stringify(jsondata));
-    // updateStatusIndicators();
+    try {
+        await websocket.send(JSON.stringify(jsondata));
+    } catch (error) {
+        console.log("requestStatus - failed to connect to websockets");
+    }
 }
 
 // request settings from the MCU 
-function requestTimingConfig() {
+async function requestTimingConfig() {
     let jsondata = {'type': 'settings'}
-    websocket.send(JSON.stringify(jsondata));
+    try {
+        await websocket.send(JSON.stringify(jsondata));
+    } catch (error) {
+        console.log("requestTimingConfig - failed to connect to websockets");
+    }
 }
 
 // toggle the automatic timer of the MCU
-function toggleTimerEnable() {
+async function toggleTimerEnable() {
     autoEnabled = !autoEnabled;
     let jsondata = {'type': 'auto',
         'auto_enabled': autoEnabled};
     if (debug) {console.log(jsondata);}
-    websocket.send(JSON.stringify(jsondata));
+    try {
+        await websocket.send(JSON.stringify(jsondata));
+    } catch (error) {
+        console.log("toggleTimerEnable - failed to connect to websockets");
+    }
+    finally {
+        loadTimerEnableStatus();
+    }
 }
 
 // send updated settings to the MCU 
-function updateSettings() {
+async function updateSettings() {
     // get the various settings from the DOM
     let timeslots;
     let duration;
@@ -89,8 +103,12 @@ function updateSettings() {
     let jsondata = {'type': 'chg_settings',
         'timeslots': timeslots,
         'duration': duration,
-        'gmt_offset': gmtOffset}
-    websocket.send(JSON.stringify(jsondata));
+        'gmt_offset': gmtOffset};
+    try {
+        await websocket.send(JSON.stringify(jsondata));
+    } catch (error) {
+        console.log("updateSettings - failed to connect to websockets");
+    }
 }
 
 /* 
@@ -104,12 +122,15 @@ function closeRelay() {
 /*
 manually set the relay for the set duration.
 */
-function setRelay(state) {
+async function setRelay(state) {
     let jsondata = {'type': 'relay',
         'relay_status': state};
     console.log(jsondata);
-    websocket.send(JSON.stringify(jsondata));
-    
+    try {
+        await websocket.send(JSON.stringify(jsondata));
+    } catch (error) {
+        console.log("setRelay - failed to connect to websockets");
+    }
 }
 
 // 
@@ -124,8 +145,16 @@ function setRelay(state) {
 //     );
 // }
 
+// load all timeslots and display on the webpage
+function loadAllTimeslotsDisplay() {
+    for (let i=0;i<24;i++) {
+        loadTimeslotState(i);
+    }
+}
+
 function loadTimeslotState(timeslot) {
     // let timeslot = parseInt($(clickedTimeslot).find('.tIndex').text());
+    // console.log(timeslot);
     let clickedTimeslot = $(`#timeBtn${timeslot}`);
     let tState = $(clickedTimeslot).find('.tState');
     let curTimeslotVal = checkTimeslot(timeslot);
@@ -141,24 +170,19 @@ function loadTimeslotState(timeslot) {
     }
 }
 
-// refresh all button states
-function loadAllTimeslotStates() {
-    for (let i=0;i<24;i++) {
-        loadTimeslotState(i);
-    }
-}
-
 function clickTimeslot(event) {
     let clickedTimeslot = $(event.currentTarget);
     let timeslot = parseInt($(clickedTimeslot).find('.tIndex').text());
     let curTimeslotVal = checkTimeslot(timeslot);
     setTimeslot(timeslot, !curTimeslotVal);
-    loadTimeslotState(timeslot);
+    console.log(curTimeslotVal);
+    console.log(timingConfig.timeslots);
+    loadAllTimeslotsDisplay(timeslot);
 }
 
 function checkTimeslot(timeslot) {
-    let byteIndex = timeslot / 8;
-    let bitIndex = timeslot % 8;
+    let byteIndex = parseInt(timeslot / 8);
+    let bitIndex = parseInt(timeslot % 8);
     let status = (timingConfig.timeslots[byteIndex] >> bitIndex) & 1;
     return status;
 }
@@ -177,23 +201,78 @@ function createTimeslotButtons() {
 }
 
 function setTimeslot(timeslot, state) {
-    let byteIndex = timeslot / 8; 
-    let bitIndex = timeslot % 8;
+    let byteIndex = parseInt(timeslot / 8); 
+    let bitIndex = parseInt(timeslot % 8);
     let mask = 1 << bitIndex;
+    console.log(`mask=${mask}`);
     if (state) {
         timingConfig.timeslots[byteIndex] = timingConfig.timeslots[byteIndex] | mask;
     }
     else {
-        timingConfig.timeslots[byteIndex] = timingConfig.timeslots[byteIndex] & !mask;
+        timingConfig.timeslots[byteIndex] = timingConfig.timeslots[byteIndex] & ~mask;
     }
 }
 
-function setClosedDuration() {
-
+function setDuration() {
+    let newDuration = $("#intervalDuration").val(); 
+    timingConfig.duration = newDuration; 
+    // alert(newDuration);
 }
 
 function setGMTOffset() {
+    let newGMTOffset = $("#GMTOffset").val();
+    timingConfig.gmt_offset = newGMTOffset;
+    // alert(timingConfig.gmt_offset);
+}
 
+// load all values into display upon webpage load
+function loadAllElements() {
+    loadTimerEnableStatus();
+    loadRelayStatus();
+    loadAllTimeslotsDisplay();
+    loadDurationDisplay();
+    // loadMaxDurationDisplay();
+    loadGMTOffset();
+}
+
+function loadTimerEnableStatus() {
+    if (autoEnabled) {
+        $("#timerEnable").text('Enabled');
+    }
+    else {
+        $("#timerEnable").text('Disabled');
+    }
+}
+
+// load relay status and display on the webpage
+function loadRelayStatus() {
+    if (relayStatus) {
+        $("#irrigationStatusIndicator").addClass("enabledBtn");
+        $("#irrigationStatusIndicator").removeClass("disabledBtn");
+    }
+    else {
+        $("#irrigationStatusIndicator").addClass("disabledBtn");
+        $("#irrigationStatusIndicator").removeClass("enabledBtn");
+    }
+} 
+
+// load duration and display on the webpage
+function loadDurationDisplay() {
+    $("#intervalDuration").val(timingConfig.duration);
+    refreshDurationDisplay();
+}
+
+// load GMT offset and display on the webpage
+function loadGMTOffset() {
+    $("#GMTOffset").val(timingConfig.gmt_offset);
+}
+
+function refreshDurationDisplay() {
+    $("#intervalDurationDisplay").text($("#intervalDuration").val());
+}
+
+function refreshMaxDurationDisplay() {
+    $("#maxIntervalDurationDisplay").val($("#maxIntervalDuration").val());
 }
 
 $(document).ready(function() {
@@ -208,7 +287,7 @@ $(document).ready(function() {
     // set the callback functions here 
     
     // toggle timer enable 
-    $("#masterSwitch").click(function() {
+    $("#timerEnable").click(function() {
         toggleTimerEnable();
     });
     // manually close the relay
@@ -220,13 +299,20 @@ $(document).ready(function() {
         clickTimeslot(event);
     });
     // set the watering duration every time the relay is closed
+    $("#intervalDuration").on('change', function() {
+        setDuration();
+    });
+    // set the interval duration 
     $("#intervalDuration").on('input', function() {
-        setI
-        alert($("#intervalDuration").val());
+        refreshDurationDisplay();
+    });
+    // set the maximum interval duration 
+    $("#maxIntervalDuration").on('change', function() {
+        $('#intervalDuration').attr('max', $("#maxIntervalDuration").val());
+        setDuration();
     });
     // adjust the GMT offset 
-    $("#GMTOffset").on('input', function() {
-        alert($("#intervalDuration").val());
+    $("#GMTOffset").on('change', function() {
         setGMTOffset();
     });
     // save settings to the ESP
@@ -234,8 +320,7 @@ $(document).ready(function() {
 
     });
 
-    // load all initial timeslot states
-    loadAllTimeslotStates();
+    loadAllElements();
 
     // set the intervals here 
     setInterval(requestStatus, 500);

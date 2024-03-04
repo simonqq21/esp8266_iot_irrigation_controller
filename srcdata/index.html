@@ -13,8 +13,8 @@
         <h1>ESP8266 IoT Irrigation Controller Web Interface</h1>
     </header>
     <div id="masterSwitchDiv">
-        <label for="masterSwitch">Enable timer: </label>
-        <button id="masterSwitch" name="masterSwitch">Enabled</button>
+        <label for="timerEnable">Enable timer: </label>
+        <button id="timerEnable" name="timerEnable">Enabled</button>
     </div>
     <div id="irrigationStatusDiv">
         <h2>Irrigation status: </h2>
@@ -35,8 +35,15 @@
     </div>
     <div id="intervalDurationDiv" style="display: flex; gap: 5px; align-items: center;">
         <label for="intervalDuration">Watering interval duration: </label>
-        <input type="range" id="intervalDuration" name="intervalDuration" class="range1" min="1" max="3600" step="1" oninput="$('#intervalDurationDisplay').text($('#intervalDuration').val())">
+        <input type="range" id="intervalDuration" name="intervalDuration" class="range1" 
+            min="1" max="3600" step="1">
         <p id="intervalDurationDisplay">0</p> <p>seconds</p>
+    </div>
+    <div id="maxIntervalDurationDiv" style="display: flex; gap: 5px; align-items: center;">
+        <label for="maxIntervalDuration">Max watering interval duration: </label>
+        <input type="range" id="maxIntervalDuration" name="maxIntervalDuration" class="range1" 
+            min="1" max="3600" step="1">
+        <p id="maxIntervalDurationDisplay">0</p> <p>seconds</p>
     </div>
     <div id="GMTOffsetDiv">
         <label for="">Local GMT offset: </label>
