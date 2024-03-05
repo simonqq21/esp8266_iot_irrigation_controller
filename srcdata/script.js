@@ -4,8 +4,8 @@ web browser interaction
 clicking on the activate pump button activates the pump momentarily
 */
 
-let gateway = `ws://${window.location.hostname}:5555/ws`; 
-// let gateway = `ws://192.168.5.75:5555/ws`; 
+// let gateway = `ws://${window.location.hostname}:5555/ws`; 
+let gateway = `ws://192.168.5.75:5555/ws`; 
 let websocket
 let debug = true; 
 
@@ -16,13 +16,14 @@ let timingConfig = {
     'duration': 0,
     'gmt_offset': 8
 }
+let maxDuration = 100;
 
 /*
 ################################################################################
 Websocket related functions
 */
 function initWebSocket() {
-    // alert('Websocket initializing');
+    console.log('Websocket initializing');
     websocket = new WebSocket(gateway);
     websocket.onopen = onOpen; 
     websocket.onclose = onClose; 
@@ -30,9 +31,9 @@ function initWebSocket() {
 }
 // runs when websocket opens
 function onOpen(event) {
-    // alert('Connection opened');
-    // JSON to request for a status update
+    // grab the settings from the MCU, then refresh the webpage elements.
     requestStatus();
+    requestTimingConfig();
 }
 // runs when websocket closes
 function onClose(event) {
@@ -142,6 +143,7 @@ function receiveStatus(jsonMsg) {
 }
 
 function receiveSettings(jsonMsg) {
+    console.log(`jsonMsg tC = ${JSON.stringify(jsonMsg)}`);
     timingConfig.timeslots = jsonMsg["timeslots"];
     timingConfig.duration = jsonMsg["duration"];
     timingConfig.gmt_offset = jsonMsg["gmt_offset"]; 
@@ -309,15 +311,17 @@ function refreshMaxDurationDisplay() {
     }
 }
 
-$(document).ready(function() {
+$(document).ready(async function() {
     createTimeslotButtons();
 
-    // initialize websocket 
+    // wait for websocket to initialize
     initWebSocket();
 
     // testing 
     // closeRelay();
-
+    $("#maxIntervalDuration").val(maxDuration);
+    refreshMaxDurationDisplay();
+    
     // set the callback functions here 
     
     // toggle timer enable 
@@ -351,13 +355,13 @@ $(document).ready(function() {
     // save settings to the ESP
     $("#saveBtn").click(function() {
         updateSettings();
+        requestTimingConfig();
     });
 
-    loadAllElements();
+    
 
     // set the intervals here 
     setInterval(requestStatus, 500);
-    setInterval(requestTimingConfig, 10000);
 });
 
 /*

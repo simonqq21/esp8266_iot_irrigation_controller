@@ -54,9 +54,9 @@ extern NTPClient timeClient;
 // async web server
 AsyncWebServer server(5555); 
 AsyncWebSocket ws("/ws"); 
-StaticJsonDocument<100> inputDoc;
-StaticJsonDocument<100> outputDoc;
-char strData[100];
+StaticJsonDocument<150> inputDoc;
+StaticJsonDocument<150> outputDoc;
+char strData[150];
 
 // wifi credentials
 #define LOCAL_SSID "wifi"
@@ -239,11 +239,11 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
     }
     // toggle the automatic relay timer 
     else if (commandType == "auto") {
+      setAutoEnable();
       if (DEBUG) {
         Serial.print("set auto to ");
         Serial.println(autoEnabled);
       }
-      setAutoEnable();
     }
     // send persistent settings JSON
     else if (commandType == "settings") {
@@ -255,11 +255,11 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
     }
     // save persistent settings to EEPROM 
     else if (commandType == "chg_settings") {
+      setTimingConfig();
       if (DEBUG) {
         Serial.println("set default settings to");
         printTimingConfig();
       }
-      setTimingConfig();
     }
     // close the relay momentarily from user manual input 
     else if (commandType == "relay") {
