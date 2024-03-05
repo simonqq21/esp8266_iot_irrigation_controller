@@ -15,11 +15,17 @@ unsigned int ledOnTime, ledOffTime, previousLEDTime;
 extern timingconfig tC;
 
 // sets the relay timer to the specified number of seconds and closes the relay
-void closeRelay() {
-    relayState = 1;
-    setLED(LED_ON);
-    timerStart = millis();
-    timer = tC.duration * 1000;
+void setRelay(bool relayValue) {
+    relayState = relayValue;
+    if (relayState) {
+        setLED(LED_ON);
+        timerStart = millis();
+        timer = tC.duration * 1000;
+    }
+    else {
+        setLED(LED_BLINK);
+        timer = 0;
+    }
 }
 
 // this function must be put in the main loop to control the relay
@@ -59,7 +65,7 @@ void checkButton() {
 void executeActionOnBtnPress() {
     if (btnPressed) {
         // execute button press action
-        closeRelay();
+        setRelay(true);
         // reset buttonPressed value
         btnPressed = 0;
     }

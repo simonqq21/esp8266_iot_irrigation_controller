@@ -3,7 +3,7 @@
 #include <Arduino.h> 
 #include "constants.h"
 
-void closeRelay();
+void setRelay(bool relayValue);
 void controlRelay();
 void checkButton();
 void executeActionOnBtnPress();

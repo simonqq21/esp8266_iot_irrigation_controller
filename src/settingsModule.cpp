@@ -6,7 +6,7 @@
 
 // EEPROM 
 unsigned int configAddr, autoEnableAddr;
-extern StaticJsonDocument<100> inputDoc;
+extern StaticJsonDocument<150> inputDoc;
 
 // persistent settings
 timingconfig tC;

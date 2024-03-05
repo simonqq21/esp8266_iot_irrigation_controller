@@ -18,6 +18,9 @@ let timingConfig = {
 }
 let maxDuration = 100;
 
+let popupTimeout;
+let setRelayTimeout; 
+
 /*
 ################################################################################
 Websocket related functions
@@ -84,6 +87,7 @@ async function toggleTimerEnable() {
     if (debug) {console.log(jsondata);}
     try {
         await websocket.send(JSON.stringify(jsondata));
+        showPopup(`Set auto timer to ${autoEnabled}.`);
     } catch (error) {
         console.log("toggleTimerEnable - failed to connect to websockets");
     }
@@ -101,6 +105,7 @@ async function updateSettings() {
         'gmt_offset': timingConfig.gmt_offset};
     try {
         await websocket.send(JSON.stringify(jsondata));
+        showPopup("Settings saved successfully.");
     } catch (error) {
         console.log("updateSettings - failed to connect to websockets");
     }
@@ -115,17 +120,16 @@ async function setRelay(state) {
     console.log(jsondata);
     try {
         await websocket.send(JSON.stringify(jsondata));
+        showPopup(`Set relay to ${state}.`);
+        if (state) {
+            setRelayTimeout = setTimeout(setRelay, timingConfig.duration*1000, false);
+        }
+        else {
+            clearTimeout(setRelayTimeout);
+        }
     } catch (error) {
         console.log("setRelay - failed to connect to websockets");
     }
-}
-
-/* 
-close the relay for a specified amount of time 
-*/
-function closeRelay() {
-    setRelay(true);
-    setTimeout(setRelay, timingConfig.duration, false);
 }
 
 // check if device has a touchscreen
@@ -185,6 +189,21 @@ function createTimeslotButtons() {
 ################################################################################
 UI updater functions
 */
+
+// show popup with text 
+function showPopup(text) {
+    clearTimeout(popupTimeout);
+    $("#popup").show();
+    $("#popupText").text(text);
+    popupTimeout = setTimeout(hidePopup, 3000);
+}
+
+// hide popup
+function hidePopup() {
+    $("#popup").hide();
+}
+
+
 // load all timeslots and display on the webpage
 function loadAllTimeslotsDisplay() {
     for (let i=0;i<24;i++) {
@@ -317,11 +336,9 @@ $(document).ready(async function() {
     // wait for websocket to initialize
     initWebSocket();
 
-    // testing 
-    // closeRelay();
     $("#maxIntervalDuration").val(maxDuration);
     refreshMaxDurationDisplay();
-    
+
     // set the callback functions here 
     
     // toggle timer enable 
@@ -330,7 +347,11 @@ $(document).ready(async function() {
     });
     // manually close the relay
     $("#closeRelayBtn").click(function() {
-        closeRelay();
+        setRelay(true);
+    });
+    // manually open the relay
+    $("#openRelayBtn").click(function() {
+        setRelay(false);
     });
     // toggle each timeslot in the schedule
     $(".timeBtn").click(function(event) {

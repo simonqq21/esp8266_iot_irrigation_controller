@@ -264,11 +264,10 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
     // close the relay momentarily from user manual input 
     else if (commandType == "relay") {
       if (DEBUG) {
-        Serial.print("closing relay for ");
-        Serial.print(tC.duration);
-        Serial.println("s");
+        Serial.print("setting relay to ");
+        Serial.println(relayState);
       }
-      closeRelay();
+      setRelay(inputDoc["relay_status"]);
     }
     inputDoc.clear();
   }
