@@ -11,5 +11,7 @@ void printRTCTime(DateTime datetime);
 void printNTPTime(NTPClient timeClient);
 void updateNTPTime();
 void adjustRTCWithNTP(NTPClient timeClient, RTC_DS1307 rtc);
+DateTime getCurDateTime();
+void NTPUpdateLoop();
 
 #endif

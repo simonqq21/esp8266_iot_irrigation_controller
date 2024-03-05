@@ -1,5 +1,9 @@
 /* JSON formats:
  - From browser to MCU 
+   - browser request system time from MCU 
+  {
+    'type': 'time'
+  }
    - browser request status update from MCU 
   {
     'type': 'status'
@@ -31,6 +35,15 @@
     'relay_status': bool 
   }
 
+
+
+
+
+
+
+
+
+
  - From MCU to browser 
   - sending relay status from MCU to browser
   {
@@ -45,4 +58,14 @@
     'duration': int from 0 to 60,
     'gmt_offset': int from -12 to 12,
   }
+   - sending system time from MCU to browser 
+   {
+    'type': 'time', 
+    'year': int, 
+    'month': int from 1-12,
+    'day': int from 1-31,
+    'hour': int from 0-23,
+    'min': int from 0-59,
+    'sec': int from 0-59
+   }
 */

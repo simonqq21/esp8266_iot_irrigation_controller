@@ -9,6 +9,12 @@ DateTime dtnow;
 long UTCOffsetInSeconds = 28800;
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "ntp.pagasa.dost.gov.ph"); 
+unsigned long lastTimeRTCUpdated;
+int updateRTCInterval = 5000;
+DateTime getCurDateTime() {
+  dtnow = rtc.now(); 
+  return dtnow;
+}
 
 void printTime(int year, int month, int day, int hour, int minute, int second) {
   Serial.print(year);
@@ -61,7 +67,14 @@ void updateNTPTime() {
   when NTP successfully connected, update RTC with NTP. 
   else get time from RTC. 
   */
-  if (NTPUpdateStatus) {adjustRTCWithNTP(timeClient, rtc);}
+  dtnow = getCurDateTime();
+  if (NTPUpdateStatus) {
+    Serial.println("Updating RTC with NTP");
+    adjustRTCWithNTP(timeClient, rtc);
+  }
+  else {
+    Serial.println("NTP not available, using RTC time.");
+  }
 }
 
 void adjustRTCWithNTP(NTPClient timeClient, RTC_DS1307 rtc) {
@@ -74,4 +87,11 @@ void adjustRTCWithNTP(NTPClient timeClient, RTC_DS1307 rtc) {
   int second = timeClient.getSeconds();
   rtc.adjust(DateTime(_year, _month, _day, hour, minute, second));
   Serial.println("time adjusted from NTP to RTC.");
+}
+
+void NTPUpdateLoop() {
+  if (millis() - lastTimeRTCUpdated > updateRTCInterval) {
+    lastTimeRTCUpdated = millis(); 
+    updateNTPTime();
+  }
 }

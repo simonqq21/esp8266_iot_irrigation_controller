@@ -68,8 +68,8 @@ char strData[150];
 IPAddress local_IP(192,168,5,75);
 IPAddress gateway(192,168,5,1);
 IPAddress subnet(255,255,255,0);
-//IPAddress primaryDNS(8,8,8,8);
-//IPAddress secondaryDNS(8,8,4,4);
+IPAddress primaryDNS(8,8,8,8);
+IPAddress secondaryDNS(8,8,4,4);
 
 //for littlefs
 File indexPage;  
@@ -81,6 +81,8 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len);
 void initWebSocket();
 void sendStatus();
 void sendTimingConfig();
+void checkTime();
+void sendSystemDateTime(); 
 
 void setup() {
   Serial.begin(115200); 
@@ -116,15 +118,10 @@ void setup() {
   calculateBlinkDurations();
   setLED(LED_BLINK);
 
-  // init RTC 
-  if (!rtc.begin()) {
-    Serial.println("Couldn't find RTC.");
-  }
-
   // WiFi
   Serial.print("Connecting to "); 
   Serial.println(LOCAL_SSID);
-  if (!WiFi.config(local_IP, gateway, subnet)) {
+  if (!WiFi.config(local_IP, gateway, subnet, primaryDNS, secondaryDNS)) {
     Serial.println("Station failed to configure.");
   }
   WiFi.begin(LOCAL_SSID, LOCAL_PASS); 
@@ -134,10 +131,6 @@ void setup() {
   // }
   //  print local IP address and start web server 
   printWiFi();
-
-  // initialize NTP 
-  timeClient.begin();
-  timeClient.setTimeOffset(UTCOffsetInSeconds); // GMT+8
 
   // initialize websocket 
   initWebSocket(); 
@@ -152,6 +145,16 @@ void setup() {
   server.on("/s.js", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(LittleFS, "/s.js", "text/javascript", false);});
   server.begin();
+
+  // init RTC 
+  if (!rtc.begin()) {
+    Serial.println("Couldn't find RTC.");
+  }
+  timeClient.begin();
+  timeClient.setTimeOffset(tC.gmtOffset*3600); // GMT+8
+  updateNTPTime(); 
+  printNTPTime(timeClient);
+  printRTCTime(dtnow);
 
   // File file = LittleFS.open("/index.html", "r");
   // if(!file){
@@ -174,7 +177,7 @@ void loop() {
   controlLED();
   checkButton();
   executeActionOnBtnPress();
-
+  NTPUpdateLoop();
 }
 
 void printWiFi() {
@@ -231,11 +234,14 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
     // Serial.println(commandType);
     // send status JSON
     if (commandType == "status") {
-      if (DEBUG) {
-        Serial.println("sending status");
-      }
+      // if (DEBUG) {
+      //   Serial.println("sending status");
+      // }
       getAutoEnable();
       sendStatus();
+    }
+    else if (commandType == "time") {
+      sendSystemDateTime();
     }
     // toggle the automatic relay timer 
     else if (commandType == "auto") {
@@ -247,9 +253,9 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
     }
     // send persistent settings JSON
     else if (commandType == "settings") {
-      if (DEBUG) {
-        Serial.println("sending settings");
-      }
+      // if (DEBUG) {
+      //   Serial.println("sending settings");
+      // }
       getTimingConfig();  
       sendTimingConfig();
     }
@@ -299,6 +305,25 @@ void sendTimingConfig() {
   }
   outputDoc["duration"] = tC.duration;
   outputDoc["gmt_offset"] = tC.gmtOffset;
+  serializeJson(outputDoc, strData);
+  ws.textAll(strData);
+}
+
+void checkTime() {
+  dtnow = getCurDateTime();
+}
+
+void sendSystemDateTime() {
+  checkTime();
+  printRTCTime(dtnow);
+  outputDoc.clear();
+  outputDoc["type"] = "time";
+  outputDoc["year"] = dtnow.year();
+  outputDoc["month"] = dtnow.month();
+  outputDoc["day"] = dtnow.day();
+  outputDoc["hour"] = dtnow.hour();
+  outputDoc["min"] = dtnow.minute();
+  outputDoc["sec"] = dtnow.second();
   serializeJson(outputDoc, strData);
   ws.textAll(strData);
 }

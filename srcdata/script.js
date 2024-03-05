@@ -16,7 +16,7 @@ let timingConfig = {
     'duration': 0,
     'gmt_offset': 8
 }
-let maxDuration = 100;
+let maxDuration = 20;
 
 let popupTimeout;
 let setRelayTimeout; 
@@ -50,7 +50,10 @@ function onMessage(event) {
     let msgType = msg['type'];
     if (debug) {console.log(msg);}
     // update status 
-    if (msgType == 'status') {
+    if (msgType == 'time') {
+        receiveTime(msg);     
+    }
+    else if (msgType == 'status') {
         receiveStatus(msg);     
     }
     // update settings
@@ -58,6 +61,16 @@ function onMessage(event) {
         receiveSettings(msg);   
     }
 } 
+
+// request system time from the MCU
+async function requestTime() {
+    let jsondata = {'type': 'time'}
+    try {
+        await websocket.send(JSON.stringify(jsondata));
+    } catch (error) {
+        console.log("requestTime - failed to connect to websockets");
+    }
+}
 
 // request status from the MCU
 async function requestStatus() {
@@ -137,6 +150,24 @@ function isTouchEnabled() {
     return ('ontouchstart' in window) || 
         (navigator.maxTouchPoints > 0) || 
         (navigator.msMaxTouchPoints > 0);
+}
+
+function receiveTime(jsonMsg) {
+    let year = String(jsonMsg.year).padStart(4, '0');
+    let month = String(jsonMsg.month).padStart(2, '0');
+    let day = String(jsonMsg.day).padStart(2, '0');
+    let hour = String(jsonMsg.hour).padStart(2, '0');
+    let min = String(jsonMsg.min).padStart(2, '0');
+    let sec = String(jsonMsg.sec).padStart(2, '0');
+    // update time in webpage 
+    setTime(year, month, day, hour, min, sec);
+}
+
+// update time in webpage 
+function setTime(year, month, day, hour, minute, second) {
+    let timeStr = `${year}/${month}/${day} ${hour}:${minute}:${second}`;
+    console.log(timeStr);
+    $("#time").text(timeStr);
 }
 
 function receiveStatus(jsonMsg) {
@@ -383,6 +414,7 @@ $(document).ready(async function() {
 
     // set the intervals here 
     setInterval(requestStatus, 500);
+    setInterval(requestTime, 500);
 });
 
 /*

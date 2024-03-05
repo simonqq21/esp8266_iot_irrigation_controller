@@ -65,7 +65,13 @@ void checkButton() {
 void executeActionOnBtnPress() {
     if (btnPressed) {
         // execute button press action
-        setRelay(true);
+        // if relay is on, a button press would turn it off.
+        if (relayState) {
+            setRelay(false);
+        }
+        else {
+            setRelay(true);
+        }
         // reset buttonPressed value
         btnPressed = 0;
     }
