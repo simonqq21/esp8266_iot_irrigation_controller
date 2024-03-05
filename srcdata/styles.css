@@ -20,8 +20,18 @@ div:not(div > div) {
     /* text-align: left; */
 }
 
-#popup > p {
-    
+#timeDiv {
+    /* position:absolute; */
+    top: 2%;
+    right: 0%; 
+    /* transform: translate(0, 7vh); */
+    float: right;
+    background-color: #dfe6ff;
+}
+
+#timeDiv > span {
+    font-size: 20px;
+    font-weight: bold;
 }
 
 button {

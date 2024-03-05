@@ -51,7 +51,7 @@ function onMessage(event) {
     if (debug) {console.log(msg);}
     // update status 
     if (msgType == 'status') {
-        receiveStatus(msg);
+        receiveStatus(msg);     
     }
     // update settings
     else if (msgType == 'settings') {
