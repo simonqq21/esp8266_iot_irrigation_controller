@@ -24,7 +24,6 @@ main - handle websocket client
 */
 
 // transient settings
-bool* timeslots;
 extern bool relayState;
 
 // EEPROM 
@@ -71,7 +70,6 @@ IPAddress secondaryDNS(8,8,4,4);
 File indexPage;  
 
 void printWiFi(); 
-void checkTime();
 
 void setup() {
   Serial.begin(115200); 
@@ -139,10 +137,13 @@ void setup() {
   if (!rtc.begin()) {
     Serial.println("Couldn't find RTC.");
   }
-  timeClient.begin();
-  timeClient.setTimeOffset(tC.gmtOffset*3600); // GMT+8
-  updateNTPTime(); 
-  printNTPTime(timeClient);
+  // timeClient.begin();
+  // timeClient.setTimeOffset(tC.gmtOffset*3600); // GMT+8
+  // updateNTPTime(); 
+  // printNTPTime(timeClient);
+  // testing 
+  adjustRTC(2024, 3, 6, 23, 59, 45);
+  getCurDateTime();
   printRTCTime(dtnow);
 
   // File file = LittleFS.open("/index.html", "r");
@@ -166,7 +167,9 @@ void loop() {
   controlLED();
   checkButton();
   executeActionOnBtnPress();
-  NTPUpdateLoop();
+  getCurDateTime();
+  // NTPUpdateLoop();
+  checkTime();
 }
 
 void printWiFi() {
@@ -181,25 +184,3 @@ void printWiFi() {
   Serial.print(rssi);
   Serial.println(" dBm");
 }
-
-// void checkTime() {
-//   dtnow = getCurDateTime();
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1,33 +1,46 @@
 #include <Arduino.h>
 #include "timeModule.h"
 
+bool timeslots[24];
+extern bool autoEnabled;
+int curTimeslotIndex, prevTimeslotIndex;
+
 // RTC 
 RTC_DS1307 rtc; 
 DateTime dtnow; 
+DateTime targetTime;
+int _year, _month, _day, _hour, _minute, _second; 
 
 // NTP server 
 long UTCOffsetInSeconds = 28800;
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "ntp.pagasa.dost.gov.ph"); 
 unsigned long lastTimeRTCUpdated;
-int updateRTCInterval = 5000;
-DateTime getCurDateTime() {
+unsigned long lastTimeTimeChecked;
+unsigned int updateRTCInterval = 5000;
+
+void getCurDateTime() {
   dtnow = rtc.now(); 
-  return dtnow;
+  getYear();
+  getMonth();
+  getDay();
+  getHour();
+  getMinute();
+  getSecond();
 }
 
-void printTime(int year, int month, int day, int hour, int minute, int second) {
+void printTime(int year, int month, int day, int _hour, int _minute, int _second) {
   Serial.print(year);
   Serial.print('/');
   Serial.print(month);
   Serial.print('/');
   Serial.println(day);
   Serial.print(' ');
-  Serial.print(hour); 
+  Serial.print(_hour); 
   Serial.print(":");
-  Serial.print(minute); 
+  Serial.print(_minute); 
   Serial.print(":");
-  Serial.print(second); 
+  Serial.print(_second); 
   Serial.println();
 }
 
@@ -67,7 +80,7 @@ void updateNTPTime() {
   when NTP successfully connected, update RTC with NTP. 
   else get time from RTC. 
   */
-  dtnow = getCurDateTime();
+  getCurDateTime();
   if (NTPUpdateStatus) {
     Serial.println("Updating RTC with NTP");
     adjustRTCWithNTP(timeClient, rtc);
@@ -79,19 +92,105 @@ void updateNTPTime() {
 
 void adjustRTCWithNTP(NTPClient timeClient, RTC_DS1307 rtc) {
   unsigned long epochTime = timeClient.getEpochTime();
-  int _year = year(epochTime);
-  int _month = month(epochTime);
-  int _day = day(epochTime);
-  int hour = timeClient.getHours();
-  int minute = timeClient.getMinutes();
-  int second = timeClient.getSeconds();
-  rtc.adjust(DateTime(_year, _month, _day, hour, minute, second));
+  _year = year(epochTime);
+  _month = month(epochTime);
+  _day = day(epochTime);
+  _hour = timeClient.getHours();
+  _minute = timeClient.getMinutes();
+  _second = timeClient.getSeconds();
+  adjustRTC(_year, _month, _day, _hour, _minute, _second);
   Serial.println("time adjusted from NTP to RTC.");
+}
+
+void adjustRTC(int _year, int _month, int _day, int _hour, int _minute, int _second) {
+  rtc.adjust(DateTime(_year, _month, _day, _hour, _minute, _second));
 }
 
 void NTPUpdateLoop() {
   if (millis() - lastTimeRTCUpdated > updateRTCInterval) {
     lastTimeRTCUpdated = millis(); 
     updateNTPTime();
+  }
+}
+
+int getYear() {
+  _year = dtnow.year();
+  return _year;
+}
+
+int getMonth() {
+  _month = dtnow.month();
+  return _month;
+}
+
+int getDay() {
+  _day = dtnow.day();
+  return _day;
+}
+
+int getHour() {
+  _hour = dtnow.hour();
+  return _hour;
+}
+
+int getMinute() {
+  _minute = dtnow.minute();
+  return _minute;
+}
+
+int getSecond() {
+  _second = dtnow.second();
+  return _second;
+}
+
+void checkTime() {
+  if (millis() - lastTimeTimeChecked > 1000) {
+    lastTimeTimeChecked = millis();
+
+    getCurDateTime();
+    curTimeslotIndex = _hour;
+    
+    if (curTimeslotIndex != prevTimeslotIndex) {
+      if (curTimeslotIndex > 0) 
+        prevTimeslotIndex = curTimeslotIndex - 1;
+      else 
+        prevTimeslotIndex = 23;
+        timeslots[prevTimeslotIndex] = 0;
+        prevTimeslotIndex = curTimeslotIndex;
+    }
+
+    if (autoEnabled) {
+      bool curTimeslotState = checkTimeslot(curTimeslotIndex);
+      // check if current time is within the interval
+      targetTime = DateTime(_year, _month, _day, curTimeslotIndex, 0, 0);
+      int tsDiff1 = (dtnow - targetTime).totalseconds();
+      Serial.print(curTimeslotIndex);
+      Serial.print(", ");
+      Serial.print(curTimeslotState);
+      Serial.print(", ");
+      Serial.print(tsDiff1);
+      Serial.print(", ");
+      Serial.print(timeslots[curTimeslotIndex]);
+      Serial.println();
+      if (curTimeslotState && 
+        tsDiff1 < INTERVAL_SECONDS &&
+        !timeslots[curTimeslotIndex]) 
+      {
+        Serial.println("enabled relay from timer!");
+        timeslots[curTimeslotIndex] = true; 
+        setRelay(true);
+      }
+    }
+  }
+}
+/*
+24*4=96
+x*(24/96) = hour 
+x%(24/96)*60 = min
+*/
+
+void resetAllTimeslots() {
+  for (int i=0;i<24;i++) {
+    timeslots[i] = false;
   }
 }
