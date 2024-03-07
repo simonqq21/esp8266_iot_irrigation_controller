@@ -19,7 +19,7 @@
   This command is sent by the browser right away after the user toggles the automatic
   toggle.
   {
-    'type': 'auto',
+    'type': 'timer_auto',
     'auto_enabled': bool
   }
   - sending updated settings from browser to MCU
@@ -34,7 +34,21 @@
     'type': 'relay',
     'relay_status': bool 
   }
-
+   - set time manually from browser or automatically from NTP
+  {
+    'type': 'ntp',
+    'use_ntp': bool
+  }
+   - change time from browser 
+   {
+    'type': 'chg_time',
+    'year': int, 
+    'month': int,
+    'day': int,
+    'hour': int,
+    'minute': int, 
+    'second': int
+   }
 
 
 
@@ -49,7 +63,8 @@
   {
     'type': 'status',
     'auto_enabled': bool,
-    'relay_status': bool
+    'relay_status': bool,
+    'use_ntp': bool
   }
    - sending current settings from MCU to browser
   {

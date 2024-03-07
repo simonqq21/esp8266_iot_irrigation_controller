@@ -5,12 +5,12 @@
 #include "constants.h"
 
 // EEPROM 
-unsigned int configAddr, autoEnableAddr;
+unsigned int configAddr, autoEnableAddr, useNTPAddr;
 extern StaticJsonDocument<150> inputDoc;
 
 // persistent settings
 timingconfig tC;
-bool autoEnabled;
+bool autoEnabled, useNTP; 
 
 void printTimingConfig() {
   Serial.print("timeslots bytes = ");
@@ -29,7 +29,7 @@ void printTimingConfig() {
   Serial.println();
 }
 
-// get the auto enable status from the EEPROM
+// get the auto enable setting from the EEPROM
 void getAutoEnable() {
   EEPROM.get(autoEnableAddr, autoEnabled);
 }
@@ -38,6 +38,7 @@ void getAutoEnable() {
 void setAutoEnable() {
   autoEnabled = inputDoc["auto_enabled"];
   EEPROM.put(autoEnableAddr, autoEnabled);
+  EEPROM.commit();
 }
 
 // get timing configuration from the EEPROM
@@ -54,6 +55,17 @@ void setTimingConfig() {
   tC.gmtOffset = inputDoc["gmt_offset"];
   // printTimingConfig();
   EEPROM.put(configAddr, tC);
+  EEPROM.commit();
+}
+
+// get the use NTP setting from the EEPROM
+void getUseNTP() {
+  EEPROM.get(useNTPAddr, useNTP);
+}
+
+void setUseNTP() {
+  useNTP = inputDoc["use_ntp"];
+  EEPROM.put(useNTPAddr, useNTP);
   EEPROM.commit();
 }
 

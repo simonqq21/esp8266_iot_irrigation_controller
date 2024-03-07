@@ -8,20 +8,7 @@
 #include "ioModule.h"
 #include "settingsModule.h"
 
-#define INTERVAL_SECONDS 300
-
-/*
-This struct is used to save and load the time from the EEPROM. 
-If the ESP8266 starts up without NTP Or RTC, it will get the time from the EEPROM.
-*/ 
-typedef struct {
-  int year;
-  int month;
-  int day;
-  int hour;
-  int minute; 
-  int second;
-} datetimeEEPROM; 
+#define INTERVAL_SECONDS 180
 
 void printTime(int year, int month, int day, int hour, int minute, int second);
 void printRTCTime(DateTime datetime); 

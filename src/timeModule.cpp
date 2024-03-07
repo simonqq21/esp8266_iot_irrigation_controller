@@ -1,8 +1,11 @@
 #include <Arduino.h>
 #include "timeModule.h"
+#include <EEPROM.h>
+#include "settingsModule.h"
+#include "constants.h"
 
 bool relayClosed;
-extern bool autoEnabled;
+extern bool autoEnabled, useNTP;
 int curTimeslotIndex, prevTimeslotIndex;
 
 // RTC 
@@ -17,7 +20,7 @@ WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "ntp.pagasa.dost.gov.ph"); 
 unsigned long lastTimeRTCUpdated;
 unsigned long lastTimeTimeChecked;
-unsigned int updateRTCInterval = 5000;
+unsigned int updateRTCInterval = 60000;
 
 void getCurDateTime() {
   dtnow = rtc.now(); 
@@ -70,24 +73,28 @@ Update the RTC and local time with NTP time only if the ESP can connect to the
 NTP server
 */
 void updateNTPTime() {
-  // check if can access NTP server
-  timeClient.update();
-  bool NTPUpdateStatus = timeClient.isTimeSet(); 
-  // printNTPTime(timeClient);
-  // Serial.print("NTP update status: ");
-  // Serial.println(NTPUpdateStatus);
-  /*
-  when NTP successfully connected, update RTC with NTP. 
-  else get time from RTC. 
-  */
-  getCurDateTime();
-  if (NTPUpdateStatus) {
-    Serial.println("Updating RTC with NTP");
-    adjustRTCWithNTP(timeClient, rtc);
+  if (useNTP) {
+    // check if can access NTP server
+    timeClient.update();
+    bool NTPUpdateStatus = timeClient.isTimeSet(); 
+    // printNTPTime(timeClient);
+    // Serial.print("NTP update status: ");
+    // Serial.println(NTPUpdateStatus);
+    /*
+    when NTP successfully connected, update RTC with NTP. 
+    else get time from RTC. 
+    */
+    getCurDateTime();
+    if (NTPUpdateStatus) {
+      Serial.println("Updating RTC with NTP");
+      adjustRTCWithNTP(timeClient, rtc);
+      printNTPTime(timeClient);
+    }
+    else {
+      Serial.println("NTP not available, using RTC time.");
+    }
   }
-  else {
-    Serial.println("NTP not available, using RTC time.");
-  }
+
 }
 
 void adjustRTCWithNTP(NTPClient timeClient, RTC_DS1307 rtc) {
@@ -164,14 +171,14 @@ void checkTime() {
       // check if current time is within the interval
       targetTime = DateTime(_year, _month, _day, curTimeslotIndex, 0, 0);
       int tsDiff1 = (dtnow - targetTime).totalseconds();
-      Serial.print(curTimeslotIndex);
-      Serial.print(", ");
-      Serial.print(curTimeslotState);
-      Serial.print(", ");
-      Serial.print(tsDiff1);
-      Serial.print(", ");
-      Serial.print(relayClosed);
-      Serial.println();
+      // Serial.print(curTimeslotIndex);
+      // Serial.print(", ");
+      // Serial.print(curTimeslotState);
+      // Serial.print(", ");
+      // Serial.print(tsDiff1);
+      // Serial.print(", ");
+      // Serial.print(relayClosed);
+      // Serial.println();
       if (curTimeslotState && 
         tsDiff1 < INTERVAL_SECONDS &&
         !relayClosed) 

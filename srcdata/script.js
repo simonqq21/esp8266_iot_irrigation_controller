@@ -10,7 +10,7 @@ let websocket
 let debug = true; 
 
 // status variables 
-let autoEnabled, relayStatus;
+let relayStatus, autoEnabled, useNTP;
 let timingConfig = {
     'timeslots': [2,0,0],
     'duration': 0,
@@ -23,7 +23,7 @@ let setRelayTimeout;
 
 /*
 ################################################################################
-Websocket related functions
+Model
 */
 function initWebSocket() {
     console.log('Websocket initializing');
@@ -32,6 +32,7 @@ function initWebSocket() {
     websocket.onclose = onClose; 
     websocket.onmessage = onMessage;
 }
+
 // runs when websocket opens
 function onOpen(event) {
     // grab the settings from the MCU, then refresh the webpage elements.
@@ -92,10 +93,43 @@ async function requestTimingConfig() {
     }
 }
 
+// get time from JSON message
+function receiveTime(jsonMsg) {
+    let year = String(jsonMsg.year).padStart(4, '0');
+    let month = String(jsonMsg.month).padStart(2, '0');
+    let day = String(jsonMsg.day).padStart(2, '0');
+    let hour = String(jsonMsg.hour).padStart(2, '0');
+    let min = String(jsonMsg.min).padStart(2, '0');
+    let sec = String(jsonMsg.sec).padStart(2, '0');
+    // update time in webpage 
+    setTime(year, month, day, hour, min, sec);
+}
+
+/*
+################################################################################
+View
+*/
+function createTimeslotButtons() {
+    for (let i=0;i<24;i++) {
+        let newTimeslotBtn = $('<button>', {id: `timeBtn${i}`, class: "timeBtn"});
+        let newTIndex = $('<span>', {class: "tIndex"});
+        let newTState = $('<span>', {class: "tState"});
+        $(newTIndex).text(i);
+        $(newTState).text('Off');
+        $(newTimeslotBtn).append(newTIndex);
+        $(newTimeslotBtn).append(newTState);
+        $('.irrigationScheduleRow').append(newTimeslotBtn);
+    }
+}
+
+/*
+################################################################################
+Controller
+*/
 // toggle the automatic timer of the MCU
 async function toggleTimerEnable() {
     autoEnabled = !autoEnabled;
-    let jsondata = {'type': 'auto',
+    let jsondata = {'type': 'timer_auto',
         'auto_enabled': autoEnabled};
     if (debug) {console.log(jsondata);}
     try {
@@ -145,24 +179,6 @@ async function setRelay(state) {
     }
 }
 
-// check if device has a touchscreen
-function isTouchEnabled() {
-    return ('ontouchstart' in window) || 
-        (navigator.maxTouchPoints > 0) || 
-        (navigator.msMaxTouchPoints > 0);
-}
-
-function receiveTime(jsonMsg) {
-    let year = String(jsonMsg.year).padStart(4, '0');
-    let month = String(jsonMsg.month).padStart(2, '0');
-    let day = String(jsonMsg.day).padStart(2, '0');
-    let hour = String(jsonMsg.hour).padStart(2, '0');
-    let min = String(jsonMsg.min).padStart(2, '0');
-    let sec = String(jsonMsg.sec).padStart(2, '0');
-    // update time in webpage 
-    setTime(year, month, day, hour, min, sec);
-}
-
 // update time in webpage 
 function setTime(year, month, day, hour, minute, second) {
     let timeStr = `${year}/${month}/${day} ${hour}:${minute}:${second}`;
@@ -171,9 +187,11 @@ function setTime(year, month, day, hour, minute, second) {
 }
 
 function receiveStatus(jsonMsg) {
-    autoEnabled = jsonMsg["auto_enabled"];
     relayStatus = jsonMsg["relay_status"];
+    useNTP = jsonMsg[""];
+    autoEnabled = jsonMsg["use_ntp"];
     loadRelayStatus();
+    loadUseNTPStatus();
     loadTimerEnableStatus();
 }
 
@@ -187,40 +205,6 @@ function receiveSettings(jsonMsg) {
     loadGMTOffset();
 }
 
-// 
-// check if touch is inside the bounding box of the element
-// function isTouchInsideElement(event, element) {
-//     const rect = element.getBoundingClientRect();
-//     return (
-//         event.touches[0].clientX >= rect.left &&
-//         event.touches[0].clientX <= rect.right &&
-//         event.touches[0].clientY >= rect.top &&
-//         event.touches[0].clientY <= rect.bottom
-//     );
-// }
-
-/*
-################################################################################
-UI creator functions
-*/
-function createTimeslotButtons() {
-    for (let i=0;i<24;i++) {
-        let newTimeslotBtn = $('<button>', {id: `timeBtn${i}`, class: "timeBtn"});
-        let newTIndex = $('<span>', {class: "tIndex"});
-        let newTState = $('<span>', {class: "tState"});
-        $(newTIndex).text(i);
-        $(newTState).text('Off');
-        $(newTimeslotBtn).append(newTIndex);
-        $(newTimeslotBtn).append(newTState);
-        $('.irrigationScheduleRow').append(newTimeslotBtn);
-    }
-}
-
-/*
-################################################################################
-UI updater functions
-*/
-
 // show popup with text 
 function showPopup(text) {
     clearTimeout(popupTimeout);
@@ -233,7 +217,6 @@ function showPopup(text) {
 function hidePopup() {
     $("#popup").hide();
 }
-
 
 // load all timeslots and display on the webpage
 function loadAllTimeslotsDisplay() {
@@ -259,6 +242,58 @@ function loadTimeslotState(timeslot) {
         $(tState).text("Off");
     }
 }
+
+
+// // check if device has a touchscreen
+// function isTouchEnabled() {
+//     return ('ontouchstart' in window) || 
+//         (navigator.maxTouchPoints > 0) || 
+//         (navigator.msMaxTouchPoints > 0);
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// 
+// check if touch is inside the bounding box of the element
+// function isTouchInsideElement(event, element) {
+//     const rect = element.getBoundingClientRect();
+//     return (
+//         event.touches[0].clientX >= rect.left &&
+//         event.touches[0].clientX <= rect.right &&
+//         event.touches[0].clientY >= rect.top &&
+//         event.touches[0].clientY <= rect.bottom
+//     );
+// }
+
+
+
+
+
+
 
 function clickTimeslot(event) {
     let clickedTimeslot = $(event.currentTarget);
@@ -313,6 +348,17 @@ function loadAllElements() {
     refreshMaxDurationDisplay();
 }
 
+function loadUseNTPStatus() {
+    if (useNTP) {
+        $("#useNTP").prop('checked', true);
+        $("#userDateTimeDiv").hide();
+    }
+    else {
+        $("#useNTP").prop('checked', false);
+        $("#userDateTimeDiv").show();
+    }
+}
+
 function loadTimerEnableStatus() {
     if (autoEnabled) {
         $("#timerEnable").text('Enabled');
@@ -361,6 +407,24 @@ function refreshMaxDurationDisplay() {
     }
 }
 
+async function setUseNTP(event) {
+    let clicked = $(event.target);
+    useNTP = $(clicked).prop('checked');
+    loadUseNTPStatus();
+    // send value to MCU 
+    let jsondata = {
+        'type': 'ntp',
+        'use_ntp': useNTP
+    };
+    if (debug) {console.log(jsondata);}
+    try {
+        await websocket.send(JSON.stringify(jsondata));
+        showPopup(`Set use_NTP to ${useNTP}.`);
+    } catch (error) {
+        console.log("setUseNTP - failed to connect to websockets");
+    }
+}
+
 $(document).ready(async function() {
     createTimeslotButtons();
 
@@ -371,7 +435,15 @@ $(document).ready(async function() {
     refreshMaxDurationDisplay();
 
     // set the callback functions here 
-    
+    // toggle NTP 
+    $("#useNTP").on('change', function(event) {
+        setUseNTP(event);
+        
+    });
+    // set user date and time to ESP8266
+    $("#userDateTime").on('change', function() {
+        alert($("#userDateTime").val());
+    });
     // toggle timer enable 
     $("#timerEnable").click(function() {
         toggleTimerEnable();

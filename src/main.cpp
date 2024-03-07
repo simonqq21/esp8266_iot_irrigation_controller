@@ -27,9 +27,9 @@ main - handle websocket client
 extern bool relayState;
 
 // EEPROM 
-extern unsigned int configAddr, autoEnableAddr;
+extern unsigned int configAddr, autoEnableAddr, useNTPAddr;
 extern timingconfig tC;
-extern bool autoEnabled;
+extern bool autoEnabled, useNTP;
 
 // RTC 
 extern RTC_DS1307 rtc; 
@@ -80,7 +80,7 @@ void setup() {
   }
 
   // initialize the emulated EEPROM as large as needed
-  int EEPROMSize = sizeof(timingconfig) + sizeof(bool);
+  int EEPROMSize = sizeof(timingconfig) + sizeof(bool) * 2;
   EEPROM.begin(EEPROMSize);
 
   // testing
@@ -89,9 +89,12 @@ void setup() {
   // calculate EEPROM addresses 
   configAddr = STARTING_ADDR;
   autoEnableAddr = configAddr + sizeof(timingconfig);
+  useNTPAddr = autoEnableAddr + sizeof(bool);
+  
   // load previous timing configuration from EEPROM if it exists
   getTimingConfig();
   getAutoEnable();
+  getUseNTP();
   Serial.println("configuration loaded from EEPROM: ");
 
   getTimingConfig();
@@ -134,14 +137,14 @@ void setup() {
   server.begin();
 
   // init RTC 
-  delay(500);
-  if (!rtc.begin()) {
+  while (!rtc.begin()) {
     Serial.println("Couldn't find RTC.");
+    delay(500);
   }
-  // timeClient.begin();
-  // timeClient.setTimeOffset(tC.gmtOffset*3600); // GMT+8
-  // updateNTPTime(); 
-  // printNTPTime(timeClient);
+
+  timeClient.begin();
+  timeClient.setTimeOffset(tC.gmtOffset*3600); // GMT+8
+  updateNTPTime(); 
 
   // testing 
   adjustRTC(2024, 3, 6, 23, 59, 45);
@@ -171,7 +174,7 @@ void loop() {
   checkButton();
   executeActionOnBtnPress();
   getCurDateTime();
-  // NTPUpdateLoop();
+  NTPUpdateLoop();
   checkTime();
 }
 
