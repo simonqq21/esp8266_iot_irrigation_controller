@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "timeModule.h"
 
-bool timeslots[24];
+bool relayClosed;
 extern bool autoEnabled;
 int curTimeslotIndex, prevTimeslotIndex;
 
@@ -155,8 +155,8 @@ void checkTime() {
         prevTimeslotIndex = curTimeslotIndex - 1;
       else 
         prevTimeslotIndex = 23;
-        timeslots[prevTimeslotIndex] = 0;
-        prevTimeslotIndex = curTimeslotIndex;
+      relayClosed = 0;
+      prevTimeslotIndex = curTimeslotIndex;
     }
 
     if (autoEnabled) {
@@ -170,14 +170,14 @@ void checkTime() {
       Serial.print(", ");
       Serial.print(tsDiff1);
       Serial.print(", ");
-      Serial.print(timeslots[curTimeslotIndex]);
+      Serial.print(relayClosed);
       Serial.println();
       if (curTimeslotState && 
         tsDiff1 < INTERVAL_SECONDS &&
-        !timeslots[curTimeslotIndex]) 
+        !relayClosed) 
       {
         Serial.println("enabled relay from timer!");
-        timeslots[curTimeslotIndex] = true; 
+        relayClosed = true; 
         setRelay(true);
       }
     }
@@ -188,9 +188,3 @@ void checkTime() {
 x*(24/96) = hour 
 x%(24/96)*60 = min
 */
-
-void resetAllTimeslots() {
-  for (int i=0;i<24;i++) {
-    timeslots[i] = false;
-  }
-}

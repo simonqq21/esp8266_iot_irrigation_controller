@@ -35,7 +35,7 @@ extern bool autoEnabled;
 extern RTC_DS1307 rtc; 
 extern DateTime dtnow; 
 
-// // NTP server 
+// NTP server 
 extern long UTCOffsetInSeconds;
 extern NTPClient timeClient; 
 
@@ -134,6 +134,7 @@ void setup() {
   server.begin();
 
   // init RTC 
+  delay(500);
   if (!rtc.begin()) {
     Serial.println("Couldn't find RTC.");
   }
@@ -141,8 +142,10 @@ void setup() {
   // timeClient.setTimeOffset(tC.gmtOffset*3600); // GMT+8
   // updateNTPTime(); 
   // printNTPTime(timeClient);
+
   // testing 
   adjustRTC(2024, 3, 6, 23, 59, 45);
+  
   getCurDateTime();
   printRTCTime(dtnow);
 
