@@ -24,49 +24,50 @@ $(document).ready(async function() {
     // set the callback functions here 
     // toggle NTP 
     $("#useNTP").on('change', function(event) {
-        setUseNTP(event);
-        
+        changeUseNTP(event);
     });
     // set user date and time to ESP8266
-    $("#userDateTime").on('change', function() {
-        alert($("#userDateTime").val());
+    $("#userDateTime").on('change', function(event) {
+        changeUserDateTime(event);
+        
     });
     // toggle timer enable 
-    $("#timerEnable").click(function() {
-        toggleTimerEnable();
+    $("#timerEnable").click(function(event) {
+        clickTimerEnable();
     });
     // manually close the relay
-    $("#closeRelayBtn").click(function() {
-        setRelay(true);
+    $("#closeRelayBtn").click(function(event) {
+        clickCloseRelayBtn(true);
     });
     // manually open the relay
-    $("#openRelayBtn").click(function() {
-        setRelay(false);
+    $("#openRelayBtn").click(function(event) {
+        clickOpenRelayBtn(false);
     });
     // toggle each timeslot in the schedule
     $(".timeBtn").click(function(event) {
-        clickTimeslot(event);
-    });
-    // set the watering duration every time the relay is closed
-    $("#intervalDuration").on('change', function() {
-        setDuration($("#intervalDuration").val());
+        clicktimeBtn(event);
     });
     // set the interval duration 
-    $("#intervalDuration").on('input', function() {
-        refreshDurationDisplay();
+    $("#intervalDuration").on('input', function(event) {
+        inputIntervalDuration(event);
+        
+    });
+    // set the watering duration every time the relay is closed
+    $("#intervalDuration").on('change', function(event) {
+        changeIntervalDuration(event);
     });
     // set the maximum interval duration 
-    $("#maxIntervalDuration").on('change', function() {
-        refreshMaxDurationDisplay();
+    $("#maxIntervalDuration").on('change', function(event) {
+        changeMaxIntervalDuration(event);
+        
     });
     // adjust the GMT offset 
-    $("#GMTOffset").on('change', function() {
-        setGMTOffset($("#GMTOffset").val());
+    $("#GMTOffset").on('change', function(event) {
+        changeGMTOffset(event);
     });
     // save settings to the ESP
-    $("#saveBtn").click(function() {
-        updateSettings();
-        requestTimingConfig();
+    $("#saveBtn").click(function(event) {
+        clickSaveBtn(event);
     });
 
     // set the intervals here 

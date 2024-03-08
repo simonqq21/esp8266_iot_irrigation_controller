@@ -8,7 +8,6 @@ function loadAllElements() {
     loadRelayStatus();
     loadAllTimeslotsDisplay();
     loadDurationDisplay();
-    // loadMaxDurationDisplay();
     loadGMTOffset();
     refreshDurationDisplay();
     refreshMaxDurationDisplay();
@@ -60,6 +59,18 @@ function refreshDurationDisplay() {
     $("#intervalDurationDisplay").text($("#intervalDuration").val());
 }
 
+function refreshMaxDurationDisplay() {
+    let maxDurationVal = parseInt($("#maxIntervalDuration").val());
+    let curDuration = timingConfig.duration;
+
+    $('#intervalDuration').attr('max', maxDurationVal);
+
+    if (curDuration > maxDurationVal) {
+        setDuration(maxDurationVal);
+        loadDurationDisplay();
+    }
+}
+
 // load GMT offset and display on the webpage
 function loadGMTOffset() {
     $("#GMTOffset").val(timingConfig.gmt_offset);
@@ -92,6 +103,7 @@ function loadAllTimeslotsDisplay() {
     }
 }
 
+// display the timeslot state for a particular timeslot
 function loadTimeslotState(timeslot) {
     // let timeslot = parseInt($(clickedTimeslot).find('.tIndex').text());
     // console.log(timeslot);
@@ -110,6 +122,7 @@ function loadTimeslotState(timeslot) {
     }
 }
 
+// create the buttons for each timeslot in a day
 function createTimeslotButtons() {
     for (let i=0;i<24;i++) {
         let newTimeslotBtn = $('<button>', {id: `timeBtn${i}`, class: "timeBtn"});
