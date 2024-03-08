@@ -1,13 +1,11 @@
 /*
-TODO:
-web browser interaction
-clicking on the activate pump button activates the pump momentarily
+Modules:
+    send and receive messages from server
+    update the user interface 
+    set callbacks to modifications on inputs
 */
 
-// let gateway = `ws://${window.location.hostname}:5555/ws`; 
-let gateway = `ws://192.168.5.75:5555/ws`; 
-let websocket
-let debug = true; 
+import * as wsM from "./wsModule.mjs";
 
 // status variables 
 let relayStatus, autoEnabled, useNTP;
@@ -25,73 +23,9 @@ let setRelayTimeout;
 ################################################################################
 Model
 */
-function initWebSocket() {
-    console.log('Websocket initializing');
-    websocket = new WebSocket(gateway);
-    websocket.onopen = onOpen; 
-    websocket.onclose = onClose; 
-    websocket.onmessage = onMessage;
-}
 
-// runs when websocket opens
-function onOpen(event) {
-    // grab the settings from the MCU, then refresh the webpage elements.
-    requestStatus();
-    requestTimingConfig();
-}
-// runs when websocket closes
-function onClose(event) {
-    // alert('Connection closed');
-    setTimeout(initWebSocket, 2000); // restart websocket
-}
-// runs when websocket receives message from server
-function onMessage(event) {
-    // console.log(event.data);
-    msg = JSON.parse(event.data);
-    let msgType = msg['type'];
-    if (debug) {console.log(msg);}
-    // update status 
-    if (msgType == 'time') {
-        receiveTime(msg);     
-    }
-    else if (msgType == 'status') {
-        receiveStatus(msg);     
-    }
-    // update settings
-    else if (msgType == 'settings') {
-        receiveSettings(msg);   
-    }
-} 
 
-// request system time from the MCU
-async function requestTime() {
-    let jsondata = {'type': 'time'}
-    try {
-        await websocket.send(JSON.stringify(jsondata));
-    } catch (error) {
-        console.log("requestTime - failed to connect to websockets");
-    }
-}
 
-// request status from the MCU
-async function requestStatus() {
-    let jsondata = {'type': 'status'}
-    try {
-        await websocket.send(JSON.stringify(jsondata));
-    } catch (error) {
-        console.log("requestStatus - failed to connect to websockets");
-    }
-}
-
-// request settings from the MCU 
-async function requestTimingConfig() {
-    let jsondata = {'type': 'settings'}
-    try {
-        await websocket.send(JSON.stringify(jsondata));
-    } catch (error) {
-        console.log("requestTimingConfig - failed to connect to websockets");
-    }
-}
 
 // get time from JSON message
 function receiveTime(jsonMsg) {
@@ -104,6 +38,56 @@ function receiveTime(jsonMsg) {
     // update time in webpage 
     setTime(year, month, day, hour, min, sec);
 }
+
+function receiveStatus(jsonMsg) {
+    relayStatus = jsonMsg["relay_status"];
+    useNTP = jsonMsg[""];
+    autoEnabled = jsonMsg["use_ntp"];
+    loadRelayStatus();
+    loadUseNTPStatus();
+    loadTimerEnableStatus();
+}
+
+function receiveSettings(jsonMsg) {
+    console.log(`jsonMsg tC = ${JSON.stringify(jsonMsg)}`);
+    timingConfig.timeslots = jsonMsg["timeslots"];
+    timingConfig.duration = jsonMsg["duration"];
+    timingConfig.gmt_offset = jsonMsg["gmt_offset"]; 
+    loadAllTimeslotsDisplay();
+    loadDurationDisplay();
+    loadGMTOffset();
+}
+
+function getTimeslot(timeslot) {
+    let byteIndex = parseInt(timeslot / 8);
+    let bitIndex = parseInt(timeslot % 8);
+    let status = (timingConfig.timeslots[byteIndex] >> bitIndex) & 1;
+    return status;
+}
+
+function setTimeslot(timeslot, state) {
+    let byteIndex = parseInt(timeslot / 8); 
+    let bitIndex = parseInt(timeslot % 8);
+    let mask = 1 << bitIndex;
+    console.log(`mask=${mask}`);
+    if (state) {
+        timingConfig.timeslots[byteIndex] = timingConfig.timeslots[byteIndex] | mask;
+    }
+    else {
+        timingConfig.timeslots[byteIndex] = timingConfig.timeslots[byteIndex] & ~mask;
+    }
+}
+
+function setDuration(duration) {
+    console.log('set duration');
+    timingConfig.duration = duration; 
+    refreshDurationDisplay();
+}
+
+function setGMTOffset(offset) {
+    timingConfig.gmt_offset = offset;
+}
+
 
 /*
 ################################################################################
@@ -186,25 +170,6 @@ function setTime(year, month, day, hour, minute, second) {
     $("#time").text(timeStr);
 }
 
-function receiveStatus(jsonMsg) {
-    relayStatus = jsonMsg["relay_status"];
-    useNTP = jsonMsg[""];
-    autoEnabled = jsonMsg["use_ntp"];
-    loadRelayStatus();
-    loadUseNTPStatus();
-    loadTimerEnableStatus();
-}
-
-function receiveSettings(jsonMsg) {
-    console.log(`jsonMsg tC = ${JSON.stringify(jsonMsg)}`);
-    timingConfig.timeslots = jsonMsg["timeslots"];
-    timingConfig.duration = jsonMsg["duration"];
-    timingConfig.gmt_offset = jsonMsg["gmt_offset"]; 
-    loadAllTimeslotsDisplay();
-    loadDurationDisplay();
-    loadGMTOffset();
-}
-
 // show popup with text 
 function showPopup(text) {
     clearTimeout(popupTimeout);
@@ -230,7 +195,7 @@ function loadTimeslotState(timeslot) {
     // console.log(timeslot);
     let clickedTimeslot = $(`#timeBtn${timeslot}`);
     let tState = $(clickedTimeslot).find('.tState');
-    let curTimeslotVal = checkTimeslot(timeslot);
+    let curTimeslotVal = getTimeslot(timeslot);
     if (curTimeslotVal) {
         $(clickedTimeslot).addClass('enabledBtn');
         $(clickedTimeslot).removeClass('disabledBtn');
@@ -243,97 +208,14 @@ function loadTimeslotState(timeslot) {
     }
 }
 
-
-// // check if device has a touchscreen
-// function isTouchEnabled() {
-//     return ('ontouchstart' in window) || 
-//         (navigator.maxTouchPoints > 0) || 
-//         (navigator.msMaxTouchPoints > 0);
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// 
-// check if touch is inside the bounding box of the element
-// function isTouchInsideElement(event, element) {
-//     const rect = element.getBoundingClientRect();
-//     return (
-//         event.touches[0].clientX >= rect.left &&
-//         event.touches[0].clientX <= rect.right &&
-//         event.touches[0].clientY >= rect.top &&
-//         event.touches[0].clientY <= rect.bottom
-//     );
-// }
-
-
-
-
-
-
-
 function clickTimeslot(event) {
     let clickedTimeslot = $(event.currentTarget);
     let timeslot = parseInt($(clickedTimeslot).find('.tIndex').text());
-    let curTimeslotVal = checkTimeslot(timeslot);
+    let curTimeslotVal = getTimeslot(timeslot);
     setTimeslot(timeslot, !curTimeslotVal);
     console.log(curTimeslotVal);
     console.log(timingConfig.timeslots);
     loadAllTimeslotsDisplay(timeslot);
-}
-
-function checkTimeslot(timeslot) {
-    let byteIndex = parseInt(timeslot / 8);
-    let bitIndex = parseInt(timeslot % 8);
-    let status = (timingConfig.timeslots[byteIndex] >> bitIndex) & 1;
-    return status;
-}
-
-function setTimeslot(timeslot, state) {
-    let byteIndex = parseInt(timeslot / 8); 
-    let bitIndex = parseInt(timeslot % 8);
-    let mask = 1 << bitIndex;
-    console.log(`mask=${mask}`);
-    if (state) {
-        timingConfig.timeslots[byteIndex] = timingConfig.timeslots[byteIndex] | mask;
-    }
-    else {
-        timingConfig.timeslots[byteIndex] = timingConfig.timeslots[byteIndex] & ~mask;
-    }
-}
-
-function setDuration(duration) {
-    console.log('set duration');
-    timingConfig.duration = duration; 
-    refreshDurationDisplay();
-}
-
-function setGMTOffset(offset) {
-    timingConfig.gmt_offset = offset;
-    // alert(timingConfig.gmt_offset);
 }
 
 // load all values into display upon webpage load
@@ -391,6 +273,68 @@ function loadGMTOffset() {
     $("#GMTOffset").val(timingConfig.gmt_offset);
 }
 
+
+// // check if device has a touchscreen
+// function isTouchEnabled() {
+//     return ('ontouchstart' in window) || 
+//         (navigator.maxTouchPoints > 0) || 
+//         (navigator.msMaxTouchPoints > 0);
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// 
+// check if touch is inside the bounding box of the element
+// function isTouchInsideElement(event, element) {
+//     const rect = element.getBoundingClientRect();
+//     return (
+//         event.touches[0].clientX >= rect.left &&
+//         event.touches[0].clientX <= rect.right &&
+//         event.touches[0].clientY >= rect.top &&
+//         event.touches[0].clientY <= rect.bottom
+//     );
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function refreshDurationDisplay() {
     $("#intervalDurationDisplay").text($("#intervalDuration").val());
 }
@@ -429,7 +373,7 @@ $(document).ready(async function() {
     createTimeslotButtons();
 
     // wait for websocket to initialize
-    initWebSocket();
+    wsM.initWebSocket();
 
     $("#maxIntervalDuration").val(maxDuration);
     refreshMaxDurationDisplay();
@@ -485,8 +429,8 @@ $(document).ready(async function() {
     
 
     // set the intervals here 
-    setInterval(requestStatus, 500);
-    setInterval(requestTime, 500);
+    setInterval(wsM.requestStatus, 500);
+    setInterval(wsM.requestTime, 500);
 });
 
 /*
