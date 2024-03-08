@@ -60,8 +60,6 @@ void getAutoEnable();
 void setAutoEnable();
 void getTimingConfig();
 void setTimingConfig();
-void getUseNTP();
-void setUseNTP();
 bool checkTimeslot(int timeslot);
 bool* getActiveTimeslots();
 void setTimeslot(int timeslot, bool newState); 

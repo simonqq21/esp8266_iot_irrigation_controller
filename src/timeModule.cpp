@@ -5,7 +5,8 @@
 #include "constants.h"
 
 bool relayClosed;
-extern bool autoEnabled, useNTP;
+extern bool autoEnabled;
+extern timingconfig tC;
 int curTimeslotIndex, prevTimeslotIndex;
 
 // RTC 
@@ -73,7 +74,7 @@ Update the RTC and local time with NTP time only if the ESP can connect to the
 NTP server
 */
 void updateNTPTime() {
-  if (useNTP) {
+  if (tC.useNTP) {
     // check if can access NTP server
     timeClient.update();
     bool NTPUpdateStatus = timeClient.isTimeSet(); 

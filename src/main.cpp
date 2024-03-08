@@ -27,9 +27,9 @@ main - handle websocket client
 extern bool relayState;
 
 // EEPROM 
-extern unsigned int configAddr, autoEnableAddr, useNTPAddr;
+extern unsigned int configAddr, autoEnableAddr;
 extern timingconfig tC;
-extern bool autoEnabled, useNTP;
+extern bool autoEnabled;
 
 // RTC 
 extern RTC_DS1307 rtc; 
@@ -89,12 +89,10 @@ void setup() {
   // calculate EEPROM addresses 
   configAddr = STARTING_ADDR;
   autoEnableAddr = configAddr + sizeof(timingconfig);
-  useNTPAddr = autoEnableAddr + sizeof(bool);
   
   // load previous timing configuration from EEPROM if it exists
   getTimingConfig();
   getAutoEnable();
-  getUseNTP();
   Serial.println("configuration loaded from EEPROM: ");
 
   getTimingConfig();

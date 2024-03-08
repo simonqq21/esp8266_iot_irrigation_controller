@@ -26,6 +26,10 @@ void printTimingConfig() {
 
   Serial.print("gmt_offset = ");
   Serial.print(tC.gmtOffset);
+  Serial.print(" ");
+
+  Serial.print("use_ntp = ");
+  Serial.print(tC.useNTP);
   Serial.println();
 }
 
@@ -53,6 +57,7 @@ void setTimingConfig() {
   }
   tC.duration = inputDoc["duration"];
   tC.gmtOffset = inputDoc["gmt_offset"];
+  tC.useNTP = inputDoc["use_ntp"];
   // printTimingConfig();
   EEPROM.put(configAddr, tC);
   EEPROM.commit();
@@ -64,10 +69,6 @@ bool checkTimeslot(int timeslot) {
   bool status;
   byte byteIndex = timeslot / 8; 
   byte bitIndex = timeslot % 8; 
-  // byte currByte = tC.timeslots[byteIndex]; 
-  // currByte = currByte >> bitIndex;
-  // currByte = currByte & 1; 
-  // status = (currByte) ? true: false;
   status = (tC.timeslots[byteIndex] >> bitIndex) & 1;
   return status;
 }

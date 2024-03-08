@@ -13,9 +13,8 @@ StaticJsonDocument<150> inputDoc;
 StaticJsonDocument<150> outputDoc;
 char strData[150];
 
-extern bool autoEnabled, useNTP;
+extern bool autoEnabled;
 extern bool relayState;
-
 extern timingconfig tC;
 
 // run everytime new data is received from the websocket
@@ -63,7 +62,6 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       //   Serial.println("sending status");
       // }
       getAutoEnable();
-      getUseNTP();
       sendStatus();
     }
     else if (commandType == "time") {
@@ -75,14 +73,6 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       if (DEBUG) {
         Serial.print("set auto to ");
         Serial.println(autoEnabled);
-      }
-    }
-    // toggle between NTP and manual time setting 
-    else if (commandType == "ntp") {
-      setUseNTP();
-      if (DEBUG) {
-        Serial.print("set use_NTP to ");
-        Serial.println(useNTP);
       }
     }
     // send persistent settings JSON
@@ -140,7 +130,6 @@ void sendStatus() {
   outputDoc["type"] = "status";
   outputDoc["auto_enabled"] = autoEnabled;
   outputDoc["relay_status"] = relayState;
-  outputDoc["use_ntp"] = useNTP;
   serializeJson(outputDoc, strData);
   ws.textAll(strData);
 }
