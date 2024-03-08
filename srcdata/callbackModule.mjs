@@ -8,9 +8,7 @@ function clickTimeslot(event) {
     loadAllTimeslotsDisplay(timeslot);
 }
 
-function refreshDurationDisplay() {
-    $("#intervalDurationDisplay").text($("#intervalDuration").val());
-}
+
 
 function refreshMaxDurationDisplay() {
     let maxDurationVal = parseInt($("#maxIntervalDuration").val());

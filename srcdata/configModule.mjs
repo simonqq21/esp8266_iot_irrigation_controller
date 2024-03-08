@@ -8,7 +8,69 @@ let timingConfig = {
     'duration': 0,
     'gmt_offset': 8
 }
+let systemDate = new Date();
 
+// save time from JSON message
+function saveTime(jsonMsg) {
+    systemDate.setFullYear(jsonMsg.year);
+    systemDate.setMonth(jsonMsg.month);
+    systemDate.setDate(jsonMsg.day);
+    systemDate.setHours(jsonMsg.hour);
+    systemDate.setMinutes(jsonMsg.min);
+    systemDate.setSeconds(jsonMsg.sec);
+}
+
+// save status variables from JSON message
+function saveStatus(jsonMsg) {
+    relayStatus = jsonMsg["relay_status"];
+    useNTP = jsonMsg["use_ntp"];
+    autoEnabled = jsonMsg["auto_enabled"];
+}
+
+// save timing config from JSON message
+function saveTimingConfig(jsonMsg) {
+    timingConfig.timeslots = jsonMsg["timeslots"];
+    timingConfig.duration = jsonMsg["duration"];
+    timingConfig.gmt_offset = jsonMsg["gmt_offset"]; 
+}
+
+// get the state of a particular timeslot
+function getTimeslot(timeslot) {
+    let byteIndex = parseInt(timeslot / 8);
+    let bitIndex = parseInt(timeslot % 8);
+    let status = (timingConfig.timeslots[byteIndex] >> bitIndex) & 1;
+    return status;
+}
+
+// set the duration of the close relay
+export function setDuration(duration) {
+    timingConfig.duration = duration; 
+}
+
+// set the GMT offset
+export function setGMTOffset(offset) {
+    timingConfig.gmt_offset = offset;
+}
+
+// set the state of a particular timeslot
+function setTimeslot(timeslot, state) {
+    let byteIndex = parseInt(timeslot / 8); 
+    let bitIndex = parseInt(timeslot % 8);
+    let mask = 1 << bitIndex;
+    console.log(`mask=${mask}`);
+    if (state) {
+        timingConfig.timeslots[byteIndex] = timingConfig.timeslots[byteIndex] | mask;
+    }
+    else {
+        timingConfig.timeslots[byteIndex] = timingConfig.timeslots[byteIndex] & ~mask;
+    }
+}
+
+
+
+
+
+/*
 // get time from JSON message
 function receiveTime(jsonMsg) {
     let year = String(jsonMsg.year).padStart(4, '0');
@@ -21,10 +83,11 @@ function receiveTime(jsonMsg) {
     setTime(year, month, day, hour, min, sec);
 }
 
+// get various status variables from JSON message
 function receiveStatus(jsonMsg) {
     relayStatus = jsonMsg["relay_status"];
-    useNTP = jsonMsg[""];
-    autoEnabled = jsonMsg["use_ntp"];
+    useNTP = jsonMsg["use_ntp"];
+    autoEnabled = jsonMsg["auto_enabled"];
     loadRelayStatus();
     loadUseNTPStatus();
     loadTimerEnableStatus();
@@ -69,3 +132,4 @@ function setTimeslot(timeslot, state) {
         timingConfig.timeslots[byteIndex] = timingConfig.timeslots[byteIndex] & ~mask;
     }
 }
+*/

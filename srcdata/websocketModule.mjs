@@ -17,8 +17,8 @@ export function initWebSocket() {
 // runs when websocket opens
 function onOpen(event) {
     // grab the settings from the MCU, then refresh the webpage elements.
-    getStatus();
-    getTimingConfig();
+    getMCUStatus();
+    getMCUTimingConfig();
 }
 // runs when websocket closes
 function onClose(event) {
@@ -46,39 +46,121 @@ function onMessage(event) {
 
 // #############################################################################
 // Getting values from the MCU via websockets 
+// time, status, timingConfig
 // get system time from the MCU
-export async function getTime() {
+export async function getMCUTime() {
     let jsondata = {'type': 'time'}
     try {
         await websocket.send(JSON.stringify(jsondata));
     } catch (error) {
-        console.log("getTime - failed to connect to websockets");
+        console.log("getMCUTime - failed to connect to websockets");
     }
 }
 
 // get status from the MCU
-export async function getStatus() {
+export async function getMCUStatus() {
     let jsondata = {'type': 'status'}
     try {
         await websocket.send(JSON.stringify(jsondata));
     } catch (error) {
-        console.log("getStatus - failed to connect to websockets");
+        console.log("getMCUStatus - failed to connect to websockets");
     }
 }
 
 // get settings from the MCU 
-export async function getTimingConfig() {
+export async function getMCUTimingConfig() {
     let jsondata = {'type': 'settings'}
     try {
         await websocket.send(JSON.stringify(jsondata));
     } catch (error) {
-        console.log("getTimingConfig - failed to connect to websockets");
+        console.log("getMCUTimingConfig - failed to connect to websockets");
     }
 }
 
 // #############################################################################
 // Setting values from the MCU via websockets 
 // set the use NTP value to the MCU
+export async function setMCUUseNTP(useNTP) {
+    // send value to MCU 
+    let jsondata = {
+        'type': 'ntp',
+        'use_ntp': useNTP
+    };
+    if (debug) {console.log(jsondata);}
+    try {
+        await websocket.send(JSON.stringify(jsondata));
+    } catch (error) {
+        console.log("setMCUUseNTP - failed to connect to websockets");
+    }
+}
+
+// // manually set the system time the MCU
+// export async function setMCUSystemTime() {
+//     // send value to MCU 
+//     let jsondata = {
+//         'type': 'chg_time',
+//         'year': useNTP,
+//         'month': ,
+//         'day': ,
+//         'hour': ,
+//         'minute': ,
+//         'second': 
+//     };
+//     if (debug) {console.log(jsondata);}
+//     try {
+//         await websocket.send(JSON.stringify(jsondata));
+//     } catch (error) {
+//         console.log("setMCUSystemTime - failed to connect to websockets");
+//     }
+// }
+
+// toggle the automatic timer of the MCU
+async function setMCUTimerEnable(autoEnabled) {
+    let jsondata = {'type': 'timer_auto',
+        'auto_enabled': autoEnabled};
+    if (debug) {console.log(jsondata);}
+    try {
+        await websocket.send(JSON.stringify(jsondata));
+    } catch (error) {
+        console.log("setMCUTimerEnable - failed to connect to websockets");
+    }
+}
+
+// send updated settings to the MCU 
+async function setMCUSettings(timingConfig) {
+    // get the various settings from the DOM
+    let jsondata = {'type': 'chg_settings',
+        'timeslots': timingConfig.timeslots,
+        'duration': timingConfig.duration,
+        'gmt_offset': timingConfig.gmt_offset};
+    try {
+        await websocket.send(JSON.stringify(jsondata));
+    } catch (error) {
+        console.log("setMCUSettings - failed to connect to websockets");
+    }
+}
+
+/*
+manually set the relay for the set duration.
+*/
+async function setMCURelay(state) {
+    let jsondata = {'type': 'relay',
+        'relay_status': state};
+    console.log(jsondata);
+    try {
+        await websocket.send(JSON.stringify(jsondata));
+        if (state) {
+            setRelayTimeout = setTimeout(setMCURelay, timingConfig.duration*1000, false);
+        }
+        else {
+            clearTimeout(setRelayTimeout);
+        }
+    } catch (error) {
+        console.log("setMCURelay - failed to connect to websockets");
+    }
+}
+
+/*
 export async function setUseNTP(event) {
     let clicked = $(event.target);
     useNTP = $(clicked).prop('checked');
@@ -98,7 +180,7 @@ export async function setUseNTP(event) {
 }
 
 // send updated settings to the MCU 
-async function updateSettings() {
+async function setMCUSettings(timingConfig) {
     // get the various settings from the DOM
     let jsondata = {'type': 'chg_settings',
         'timeslots': timingConfig.timeslots,
@@ -108,14 +190,11 @@ async function updateSettings() {
         await websocket.send(JSON.stringify(jsondata));
         showPopup("Settings saved successfully.");
     } catch (error) {
-        console.log("updateSettings - failed to connect to websockets");
+        console.log("setMCUSettings - failed to connect to websockets");
     }
 }
 
-/*
-manually set the relay for the set duration.
-*/
-async function setRelay(state) {
+async function setMCURelay(state) {
     let jsondata = {'type': 'relay',
         'relay_status': state};
     console.log(jsondata);
@@ -123,12 +202,13 @@ async function setRelay(state) {
         await websocket.send(JSON.stringify(jsondata));
         showPopup(`Set relay to ${state}.`);
         if (state) {
-            setRelayTimeout = setTimeout(setRelay, timingConfig.duration*1000, false);
+            setRelayTimeout = setTimeout(setMCURelay, timingConfig.duration*1000, false);
         }
         else {
             clearTimeout(setRelayTimeout);
         }
     } catch (error) {
-        console.log("setRelay - failed to connect to websockets");
+        console.log("setMCURelay - failed to connect to websockets");
     }
 }
+*/

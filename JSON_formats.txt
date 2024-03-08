@@ -12,6 +12,14 @@
    {
     'type': 'settings'
    }
+
+
+   
+  - set time manually from browser or automatically from NTP
+  {
+    'type': 'ntp',
+    'use_ntp': bool
+  }
   - Toggle the automatic relay timer. Enabling the automatic relay timer will enable
   the daily relay timeslots, and disabling the automatic relay timer will simply 
   disable the daily relay timeslots so the only time the relay closes is if the user
@@ -33,11 +41,6 @@
   {
     'type': 'relay',
     'relay_status': bool 
-  }
-   - set time manually from browser or automatically from NTP
-  {
-    'type': 'ntp',
-    'use_ntp': bool
   }
    - change time from browser 
    {

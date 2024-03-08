@@ -15,7 +15,7 @@ function loadAllElements() {
 }
 
 // load relay status and display on the webpage
-function loadUseNTPStatus() {
+function loadUseNTPStatus(useNTP) {
     if (useNTP) {
         $("#useNTP").prop('checked', true);
         $("#userDateTimeDiv").hide();
@@ -26,7 +26,8 @@ function loadUseNTPStatus() {
     }
 }
 
-function loadTimerEnableStatus() {
+// load the timer enable status on the webpage
+function loadTimerEnableStatus(autoEnabled) {
     if (autoEnabled) {
         $("#timerEnable").text('Enabled');
     }
@@ -35,6 +36,7 @@ function loadTimerEnableStatus() {
     }
 }
 
+// load the relay status on the webpage
 function loadRelayStatus() {
     if (relayStatus) {
         $("#irrigationStatusIndicator").addClass("enabledBtn");
@@ -50,6 +52,12 @@ function loadRelayStatus() {
 function loadDurationDisplay() {
     $("#intervalDuration").val(timingConfig.duration);
     refreshDurationDisplay();
+}
+
+// synchronize the value of the interval duration text with the interval duration
+// input
+function refreshDurationDisplay() {
+    $("#intervalDurationDisplay").text($("#intervalDuration").val());
 }
 
 // load GMT offset and display on the webpage
@@ -114,3 +122,4 @@ function createTimeslotButtons() {
         $('.irrigationScheduleRow').append(newTimeslotBtn);
     }
 }
+
