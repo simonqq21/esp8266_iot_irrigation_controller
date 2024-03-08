@@ -117,10 +117,7 @@ export async function setMCUUseNTP(useNTP) {
 // toggle the automatic timer of the MCU
 async function setMCUTimerEnable(autoEnabled) {
     let jsondata = {'type': 'timer_auto',
-        'auto_enabled': autoEnabled};
-    if (debug) {console.log(jsondata);}
-    try {
-        await websocket.send(JSON.stringify(jsondata));
+        'auto_enabled': autoEnab    // loadMaxDurationDisplay();N.stringify(jsondata));
     } catch (error) {
         console.log("setMCUTimerEnable - failed to connect to websockets");
     }

@@ -12,14 +12,6 @@
    {
     'type': 'settings'
    }
-
-
-   
-  - set time manually from browser or automatically from NTP
-  {
-    'type': 'ntp',
-    'use_ntp': bool
-  }
   - Toggle the automatic relay timer. Enabling the automatic relay timer will enable
   the daily relay timeslots, and disabling the automatic relay timer will simply 
   disable the daily relay timeslots so the only time the relay closes is if the user
@@ -36,6 +28,7 @@
     'timeslots': array of 3 bytes representing the three bytes stored in EEPROM,
     'duration': int from 0 to 60,
     'gmt_offset': int from -12 to 12,
+    'use_ntp': bool
   }
    - send command from browser to enable the relay momentarily for the saved duration.
   {
@@ -67,7 +60,6 @@
     'type': 'status',
     'auto_enabled': bool,
     'relay_status': bool,
-    'use_ntp': bool
   }
    - sending current settings from MCU to browser
   {
@@ -75,6 +67,7 @@
     'timeslots': array of 3 bytes representing the three bytes stored in EEPROM,
     'duration': int from 0 to 60,
     'gmt_offset': int from -12 to 12,
+    'use_ntp': bool
   }
    - sending system time from MCU to browser 
    {

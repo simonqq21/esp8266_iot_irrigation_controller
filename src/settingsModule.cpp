@@ -10,7 +10,7 @@ extern StaticJsonDocument<150> inputDoc;
 
 // persistent settings
 timingconfig tC;
-bool autoEnabled, useNTP; 
+bool autoEnabled; 
 
 void printTimingConfig() {
   Serial.print("timeslots bytes = ");
@@ -58,16 +58,6 @@ void setTimingConfig() {
   EEPROM.commit();
 }
 
-// get the use NTP setting from the EEPROM
-void getUseNTP() {
-  EEPROM.get(useNTPAddr, useNTP);
-}
-
-void setUseNTP() {
-  useNTP = inputDoc["use_ntp"];
-  EEPROM.put(useNTPAddr, useNTP);
-  EEPROM.commit();
-}
 
 // check the state of a certain timeslot
 bool checkTimeslot(int timeslot) {

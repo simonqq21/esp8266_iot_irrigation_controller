@@ -2,11 +2,12 @@
 let setRelayTimeout; 
 
 // status variables 
-let relayStatus, autoEnabled, useNTP;
+let relayStatus, autoEnabled;
 let timingConfig = {
     'timeslots': [2,0,0],
     'duration': 0,
-    'gmt_offset': 8
+    'gmt_offset': 8,
+    'use_ntp': false
 }
 let systemDate = new Date();
 

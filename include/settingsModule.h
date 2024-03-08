@@ -52,6 +52,7 @@ typedef struct {
   byte timeslots[3];
   short duration; 
   byte gmtOffset;
+  bool useNTP;
 } timingconfig;
 
 void printTimingConfig();
