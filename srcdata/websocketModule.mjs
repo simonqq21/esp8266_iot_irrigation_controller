@@ -1,7 +1,11 @@
+import * as cfgMod from "./configModule.mjs";
+
 // let gateway = `ws://${window.location.hostname}:5555/ws`; 
 export let gateway = `ws://192.168.5.75:5555/ws`; 
 export let websocket;
 export let debug = true; 
+
+let setRelayTimeout; 
 
 // #############################################################################
 // Websocket initialization functions
@@ -77,23 +81,6 @@ export async function getMCUTimingConfig() {
     }
 }
 
-// #############################################################################
-// Setting values from the MCU via websockets 
-// set the use NTP value to the MCU
-export async function setMCUUseNTP(useNTP) {
-    // send value to MCU 
-    let jsondata = {
-        'type': 'ntp',
-        'use_ntp': useNTP
-    };
-    if (debug) {console.log(jsondata);}
-    try {
-        await websocket.send(JSON.stringify(jsondata));
-    } catch (error) {
-        console.log("setMCUUseNTP - failed to connect to websockets");
-    }
-}
-
 // // manually set the system time the MCU
 // export async function setMCUSystemTime() {
 //     // send value to MCU 
@@ -117,8 +104,11 @@ export async function setMCUUseNTP(useNTP) {
 // toggle the automatic timer of the MCU
 async function setMCUTimerEnable(autoEnabled) {
     let jsondata = {'type': 'timer_auto',
-        'auto_enabled': autoEnab    // loadMaxDurationDisplay();N.stringify(jsondata));
-    } catch (error) {
+        'auto_enabled': autoEnabled};   
+    try {
+        await websocket.send(JSON.stringify(jsondata));
+    }
+    catch (error) {
         console.log("setMCUTimerEnable - failed to connect to websockets");
     }
 }
@@ -129,7 +119,8 @@ async function setMCUSettings(timingConfig) {
     let jsondata = {'type': 'chg_settings',
         'timeslots': timingConfig.timeslots,
         'duration': timingConfig.duration,
-        'gmt_offset': timingConfig.gmt_offset};
+        'gmt_offset': timingConfig.gmt_offset,
+        'use_ntp': timingConfig.use_ntp};
     try {
         await websocket.send(JSON.stringify(jsondata));
     } catch (error) {
@@ -158,23 +149,7 @@ async function setMCURelay(state) {
 }
 
 /*
-export async function setUseNTP(event) {
-    let clicked = $(event.target);
-    useNTP = $(clicked).prop('checked');
-    loadUseNTPStatus();
-    // send value to MCU 
-    let jsondata = {
-        'type': 'ntp',
-        'use_ntp': useNTP
-    };
-    if (debug) {console.log(jsondata);}
-    try {
-        await websocket.send(JSON.stringify(jsondata));
-        showPopup(`Set use_NTP to ${useNTP}.`);
-    } catch (error) {
-        console.log("setUseNTP - failed to connect to websockets");
-    }
-}
+
 
 // send updated settings to the MCU 
 async function setMCUSettings(timingConfig) {

@@ -1,5 +1,12 @@
+import * as cfgMod from "./configModule.mjs";
+import * as wsMod from "./websocketModule.mjs";
+import * as uicMod from "./uiControllerModule.mjs";
+
 function changeUseNTP(event) {
-    
+    let clicked = $(event.target);
+    useNTP = $(clicked).prop('checked');
+    cfgMod.setUseNTP(useNTP);
+    uicMod.loadUseNTPStatus(useNTP);
 }
 
 function changeUserDateTime(event) {

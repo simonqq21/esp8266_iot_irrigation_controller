@@ -1,6 +1,3 @@
-
-let setRelayTimeout; 
-
 // status variables 
 let relayStatus, autoEnabled;
 let timingConfig = {
@@ -12,7 +9,7 @@ let timingConfig = {
 let systemDate = new Date();
 
 // save time from JSON message
-function saveTime(jsonMsg) {
+export function saveTime(jsonMsg) {
     systemDate.setFullYear(jsonMsg.year);
     systemDate.setMonth(jsonMsg.month);
     systemDate.setDate(jsonMsg.day);
@@ -24,7 +21,6 @@ function saveTime(jsonMsg) {
 // save status variables from JSON message
 function saveStatus(jsonMsg) {
     relayStatus = jsonMsg["relay_status"];
-    useNTP = jsonMsg["use_ntp"];
     autoEnabled = jsonMsg["auto_enabled"];
 }
 
@@ -33,6 +29,23 @@ function saveTimingConfig(jsonMsg) {
     timingConfig.timeslots = jsonMsg["timeslots"];
     timingConfig.duration = jsonMsg["duration"];
     timingConfig.gmt_offset = jsonMsg["gmt_offset"]; 
+    timingConfig.use_ntp = jsonMsg["use_ntp"];
+}
+
+export function getTime() {
+    return systemDate;
+}
+
+export function getAutoEnabled() {
+    return autoEnabled;
+}
+
+export function getRelayStatus() {
+    return relayStatus;
+}
+
+export function getTimingConfig() {
+    return timingConfig;
 }
 
 // get the state of a particular timeslot
@@ -51,6 +64,10 @@ export function setDuration(duration) {
 // set the GMT offset
 export function setGMTOffset(offset) {
     timingConfig.gmt_offset = offset;
+}
+
+export function setUseNTP(useNTP) {
+    timingConfig.use_ntp = useNTP;
 }
 
 // set the state of a particular timeslot

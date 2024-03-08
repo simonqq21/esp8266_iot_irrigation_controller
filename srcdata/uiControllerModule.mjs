@@ -1,3 +1,4 @@
+import * as cfgMod from "./configModule.mjs";
 
 let maxDuration = 20;
 let popupTimeout;
@@ -13,6 +14,31 @@ function loadAllElements() {
     refreshMaxDurationDisplay();
 }
 
+// load the timer enable status on the webpage
+function loadTimerEnableStatus(autoEnabled) {
+    if (autoEnabled) {
+        $("#timerEnable").text('Enabled');
+    }
+    else {
+        $("#timerEnable").text('Disabled');
+    }
+}
+
+// load the relay status on the webpage
+function loadRelayStatus(relayStatus) {
+    if (relayStatus) {
+        $("#irrigationStatusIndicator").addClass("enabledBtn");
+        $("#irrigationStatusIndicator").removeClass("disabledBtn");
+    }
+    else {
+        $("#irrigationStatusIndicator").addClass("disabledBtn");
+        $("#irrigationStatusIndicator").removeClass("enabledBtn");
+    }
+} 
+
+// #############################################################################
+// load timingconfig vars
+
 // load relay status and display on the webpage
 function loadUseNTPStatus(useNTP) {
     if (useNTP) {
@@ -25,31 +51,9 @@ function loadUseNTPStatus(useNTP) {
     }
 }
 
-// load the timer enable status on the webpage
-function loadTimerEnableStatus(autoEnabled) {
-    if (autoEnabled) {
-        $("#timerEnable").text('Enabled');
-    }
-    else {
-        $("#timerEnable").text('Disabled');
-    }
-}
-
-// load the relay status on the webpage
-function loadRelayStatus() {
-    if (relayStatus) {
-        $("#irrigationStatusIndicator").addClass("enabledBtn");
-        $("#irrigationStatusIndicator").removeClass("disabledBtn");
-    }
-    else {
-        $("#irrigationStatusIndicator").addClass("disabledBtn");
-        $("#irrigationStatusIndicator").removeClass("enabledBtn");
-    }
-} 
-
 // load duration and display on the webpage
-function loadDurationDisplay() {
-    $("#intervalDuration").val(timingConfig.duration);
+function loadDuration(duration) {
+    $("#intervalDuration").val(duration);
     refreshDurationDisplay();
 }
 
@@ -59,22 +63,21 @@ function refreshDurationDisplay() {
     $("#intervalDurationDisplay").text($("#intervalDuration").val());
 }
 
-function refreshMaxDurationDisplay() {
+function refreshMaxDurationDisplay(curDuration) {
     let maxDurationVal = parseInt($("#maxIntervalDuration").val());
-    let curDuration = timingConfig.duration;
-
     $('#intervalDuration').attr('max', maxDurationVal);
 
     if (curDuration > maxDurationVal) {
         setDuration(maxDurationVal);
-        loadDurationDisplay();
+        loadDuration();
     }
 }
 
 // load GMT offset and display on the webpage
-function loadGMTOffset() {
-    $("#GMTOffset").val(timingConfig.gmt_offset);
+function loadGMTOffset(gmt_offset) {
+    $("#GMTOffset").val(gmt_offset);
 }
+// #############################################################################
 
 // update time in webpage 
 function setTime(year, month, day, hour, minute, second) {
@@ -104,12 +107,10 @@ function loadAllTimeslotsDisplay() {
 }
 
 // display the timeslot state for a particular timeslot
-function loadTimeslotState(timeslot) {
-    // let timeslot = parseInt($(clickedTimeslot).find('.tIndex').text());
-    // console.log(timeslot);
+function loadTimeslotState(timeslot, curTimeslotVal) {
     let clickedTimeslot = $(`#timeBtn${timeslot}`);
     let tState = $(clickedTimeslot).find('.tState');
-    let curTimeslotVal = getTimeslot(timeslot);
+    // let curTimeslotVal = getTimeslot(timeslot);
     if (curTimeslotVal) {
         $(clickedTimeslot).addClass('enabledBtn');
         $(clickedTimeslot).removeClass('disabledBtn');
@@ -121,6 +122,9 @@ function loadTimeslotState(timeslot) {
         $(tState).text("Off");
     }
 }
+
+
+
 
 // create the buttons for each timeslot in a day
 function createTimeslotButtons() {
