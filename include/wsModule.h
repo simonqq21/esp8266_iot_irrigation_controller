@@ -14,6 +14,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len);
 void initWebSocket();
 void sendSystemDateTime(); 
 void sendStatus();
+void sendAutoEnable();
 void sendTimingConfig();
 
 #endif

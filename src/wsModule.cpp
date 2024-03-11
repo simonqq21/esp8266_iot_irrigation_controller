@@ -57,18 +57,20 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
     // Serial.print("commandType=");
     // Serial.println(commandType);
     // send status JSON
-    if (commandType == "status") {
-      // if (DEBUG) {
-      //   Serial.println("sending status");
-      // }
-      getAutoEnable();
+    if (commandType == "time") {
+      sendSystemDateTime();
+      
+    }
+    else if (commandType == "status") {
       sendStatus();
     }
-    else if (commandType == "time") {
-      sendSystemDateTime();
+    // get auto enable setting 
+    else if (commandType == "auto_enable") {
+      getAutoEnable();
+      sendAutoEnable();
     }
     // toggle the automatic relay timer 
-    else if (commandType == "timer_auto") {
+    else if (commandType == "chg_auto_enable") {
       setAutoEnable();
       if (DEBUG) {
         Serial.print("set auto to ");
@@ -128,8 +130,16 @@ void sendSystemDateTime() {
 void sendStatus() {
   outputDoc.clear();
   outputDoc["type"] = "status";
-  outputDoc["auto_enabled"] = autoEnabled;
   outputDoc["relay_status"] = relayState;
+  serializeJson(outputDoc, strData);
+  ws.textAll(strData);
+}
+
+// send auto enable setting to browser 
+void sendAutoEnable() {
+  outputDoc.clear();
+  outputDoc["type"] = "auto_enable";
+  outputDoc["auto_enabled"] = autoEnabled;
   serializeJson(outputDoc, strData);
   ws.textAll(strData);
 }

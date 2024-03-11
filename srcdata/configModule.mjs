@@ -19,41 +19,61 @@ export function saveTime(jsonMsg) {
 }
 
 // save status variables from JSON message
-function saveStatus(jsonMsg) {
+export function saveStatus(jsonMsg) {
     relayStatus = jsonMsg["relay_status"];
     autoEnabled = jsonMsg["auto_enabled"];
 }
 
 // save timing config from JSON message
-function saveTimingConfig(jsonMsg) {
-    timingConfig.timeslots = jsonMsg["timeslots"];
-    timingConfig.duration = jsonMsg["duration"];
-    timingConfig.gmt_offset = jsonMsg["gmt_offset"]; 
-    timingConfig.use_ntp = jsonMsg["use_ntp"];
+export function saveTimingConfig(jsonMsg) {
+    setTimeslots(jsonMsg["timeslots"]);
+    setDuration(jsonMsg["duration"]);
+    setGMTOffset(jsonMsg["gmt_offset"]);
+    setUseNTP(jsonMsg["use_ntp"]);
 }
 
+// get time from config
 export function getTime() {
     return systemDate;
 }
 
+// get auto timer enabled from config
 export function getAutoEnabled() {
     return autoEnabled;
 }
 
+// get relay status from config
 export function getRelayStatus() {
     return relayStatus;
 }
 
+// get timingConfig from config
 export function getTimingConfig() {
     return timingConfig;
 }
 
+export function getDuration() {
+    return timingConfig.duration;
+}
+
+export function getGMTOffset() {
+    return timingConfig.gmt_offset;
+}
+
+export function getUseNTP() {
+    return timingConfig.use_ntp;
+}
+
 // get the state of a particular timeslot
-function getTimeslot(timeslot) {
+export function getTimeslot(timeslot) {
     let byteIndex = parseInt(timeslot / 8);
     let bitIndex = parseInt(timeslot % 8);
     let status = (timingConfig.timeslots[byteIndex] >> bitIndex) & 1;
     return status;
+}
+
+export function setAutoEnabled(newAutoEnabled) {
+    autoEnabled = newAutoEnabled;
 }
 
 // set the duration of the close relay
@@ -66,12 +86,17 @@ export function setGMTOffset(offset) {
     timingConfig.gmt_offset = offset;
 }
 
+// set the use NTP variable
 export function setUseNTP(useNTP) {
     timingConfig.use_ntp = useNTP;
 }
 
+export function setTimeslots(timeslots) {
+    timingConfig.timeslots = timeslots;
+}
+
 // set the state of a particular timeslot
-function setTimeslot(timeslot, state) {
+export function setTimeslot(timeslot, state) {
     let byteIndex = parseInt(timeslot / 8); 
     let bitIndex = parseInt(timeslot % 8);
     let mask = 1 << bitIndex;

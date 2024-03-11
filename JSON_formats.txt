@@ -8,6 +8,10 @@
   {
     'type': 'status'
   }
+  - browser request auto enable setting from MCU 
+  {
+    'type': 'auto_enable'
+  }
    - browser request settings from MCU 
    {
     'type': 'settings'
@@ -19,7 +23,7 @@
   This command is sent by the browser right away after the user toggles the automatic
   toggle.
   {
-    'type': 'timer_auto',
+    'type': 'chg_auto_enable',
     'auto_enabled': bool
   }
   - sending updated settings from browser to MCU
@@ -58,8 +62,12 @@
   - sending relay status from MCU to browser
   {
     'type': 'status',
-    'auto_enabled': bool,
     'relay_status': bool,
+  }
+  - sending auto enable setting from MCU to browser
+  {
+    'type': 'auto_enable',
+    'auto_enabled': bool,
   }
    - sending current settings from MCU to browser
   {

@@ -8,72 +8,87 @@ Modules:
     
 */
 import * as wsMod from "./websocketModule.mjs";
-import * as cbMod from "./callbackModule.mjs";
 import * as uicMod from "./uiControllerModule.mjs";
 import * as cfgMod from "./configModule.mjs";
+import * as cbMod from "./callbackModule.mjs";
 
 $(document).ready(async function() {
-    createTimeslotButtons();
+    uicMod.createTimeslotButtons();
 
     // wait for websocket to initialize
-    wsModule.initWebSocket();
-
-    $("#maxIntervalDuration").val(maxDuration);
-    refreshMaxDurationDisplay();
+    wsMod.initWebSocket();
 
     // set the callback functions here 
     // toggle NTP 
     $("#useNTP").on('change', function(event) {
-        changeUseNTP(event);
+        cbMod.changeUseNTP(event);
     });
     // set user date and time to ESP8266
     $("#userDateTime").on('change', function(event) {
-        changeUserDateTime(event);
-        
+        cbMod.changeUserDateTime(event);
     });
     // toggle timer enable 
     $("#timerEnable").click(function(event) {
-        clickTimerEnable();
+        cbMod.clickAutoEnable();
     });
     // manually close the relay
     $("#closeRelayBtn").click(function(event) {
-        clickCloseRelayBtn(true);
+        cbMod.clickCloseRelayBtn(true);
     });
     // manually open the relay
     $("#openRelayBtn").click(function(event) {
-        clickOpenRelayBtn(false);
+        cbMod.clickOpenRelayBtn(false);
     });
     // toggle each timeslot in the schedule
     $(".timeBtn").click(function(event) {
-        clicktimeBtn(event);
+        cbMod.clicktimeBtn(event);
     });
     // set the interval duration 
     $("#intervalDuration").on('input', function(event) {
-        inputIntervalDuration(event);
+        cbMod.inputIntervalDuration(event);
         
     });
     // set the watering duration every time the relay is closed
     $("#intervalDuration").on('change', function(event) {
-        changeIntervalDuration(event);
+        cbMod.changeIntervalDuration(event);
     });
     // set the maximum interval duration 
     $("#maxIntervalDuration").on('change', function(event) {
-        changeMaxIntervalDuration(event);
+        cbMod.changeMaxIntervalDuration(event);
         
     });
     // adjust the GMT offset 
     $("#GMTOffset").on('change', function(event) {
-        changeGMTOffset(event);
+        cbMod.changeGMTOffset(event);
     });
     // save settings to the ESP
     $("#saveBtn").click(function(event) {
-        clickSaveBtn(event);
+        cbMod.clickSaveBtn(event);
     });
 
     // set the intervals here 
-    setInterval(wsModule.requestStatus, 500);
-    setInterval(wsModule.requestTime, 500);
+    setInterval(cbMod.requestStatusInterval, 500);
+    setInterval(cbMod.requestTimeInterval, 500);
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // // check if device has a touchscreen
 // function isTouchEnabled() {

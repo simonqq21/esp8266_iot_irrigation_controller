@@ -1,6 +1,7 @@
+// let gateway = `ws://${window.location.hostname}:5555/ws`; 
+import * as uicMod from "./uiControllerModule.mjs";
 import * as cfgMod from "./configModule.mjs";
 
-// let gateway = `ws://${window.location.hostname}:5555/ws`; 
 export let gateway = `ws://192.168.5.75:5555/ws`; 
 export let websocket;
 export let debug = true; 
@@ -10,6 +11,7 @@ let setRelayTimeout;
 // #############################################################################
 // Websocket initialization functions
 // initialize websocket 
+// {receiveTime, receiveStatus, receiveSettings}
 export function initWebSocket() {
     console.log('Websocket initializing');
     websocket = new WebSocket(gateway);
@@ -21,8 +23,9 @@ export function initWebSocket() {
 // runs when websocket opens
 function onOpen(event) {
     // grab the settings from the MCU, then refresh the webpage elements.
-    getMCUStatus();
-    getMCUTimingConfig();
+    requestMCUTime();
+    requestMCUStatus();
+    requestMCUTimingConfig();
 }
 // runs when websocket closes
 function onClose(event) {
@@ -37,14 +40,18 @@ function onMessage(event) {
     if (debug) {console.log(msg);}
     // update status 
     if (msgType == 'time') {
-        receiveTime(msg);     
+        cfgMod.saveTime(msg);
+        // receiveTime(msg);     
     }
     else if (msgType == 'status') {
-        receiveStatus(msg);     
+        cfgMod.saveStatus(msg);
+        // console.log(`autoenabled=${JSON.stringify(msg)}`);
+        // receiveStatus(msg);     
     }
     // update settings
     else if (msgType == 'settings') {
-        receiveSettings(msg);   
+        cfgMod.saveTimingConfig(msg);
+        // receiveSettings(msg);   
     }
 } 
 
@@ -52,69 +59,70 @@ function onMessage(event) {
 // Getting values from the MCU via websockets 
 // time, status, timingConfig
 // get system time from the MCU
-export async function getMCUTime() {
-    let jsondata = {'type': 'time'}
+export async function requestMCUTime() {
+    let jsondata = {'type': 'time'};
     try {
         await websocket.send(JSON.stringify(jsondata));
     } catch (error) {
-        console.log("getMCUTime - failed to connect to websockets");
+        console.log("requestMCUTime - failed to connect to websockets");
     }
 }
 
 // get status from the MCU
-export async function getMCUStatus() {
-    let jsondata = {'type': 'status'}
+export async function requestMCUStatus() {
+    let jsondata = {'type': 'status'};
     try {
         await websocket.send(JSON.stringify(jsondata));
     } catch (error) {
-        console.log("getMCUStatus - failed to connect to websockets");
+        console.log("requestMCUStatus - failed to connect to websockets");
     }
 }
 
 // get settings from the MCU 
-export async function getMCUTimingConfig() {
-    let jsondata = {'type': 'settings'}
+export async function requestMCUTimingConfig() {
+    let jsondata = {'type': 'settings'};
     try {
         await websocket.send(JSON.stringify(jsondata));
     } catch (error) {
-        console.log("getMCUTimingConfig - failed to connect to websockets");
+        console.log("requestMCUTimingConfig - failed to connect to websockets");
     }
 }
 
-// // manually set the system time the MCU
-// export async function setMCUSystemTime() {
-//     // send value to MCU 
-//     let jsondata = {
-//         'type': 'chg_time',
-//         'year': useNTP,
-//         'month': ,
-//         'day': ,
-//         'hour': ,
-//         'minute': ,
-//         'second': 
-//     };
-//     if (debug) {console.log(jsondata);}
-//     try {
-//         await websocket.send(JSON.stringify(jsondata));
-//     } catch (error) {
-//         console.log("setMCUSystemTime - failed to connect to websockets");
-//     }
-// }
+// manually set the system time the MCU
+export async function setMCUSystemTime(systemDate) {
+    // send value to MCU 
+    let jsondata = {
+        'type': 'chg_time',
+        'year': systemDate.getFullYear(),
+        'month': systemDate.getMonth(),
+        'day': systemDate.getDate(),
+        'hour': systemDate.getHours(),
+        'minute': systemDate.getMinutes(),
+        'second': systemDate.getSeconds()
+    };
+    if (debug) {console.log(jsondata);}
+    try {
+        await websocket.send(JSON.stringify(jsondata));
+    } catch (error) {
+        console.log("setMCUSystemTime - failed to connect to websockets");
+    }
+}
 
 // toggle the automatic timer of the MCU
-async function setMCUTimerEnable(autoEnabled) {
+export async function setMCUAutoEnable(autoEnabled) {
     let jsondata = {'type': 'timer_auto',
         'auto_enabled': autoEnabled};   
     try {
+        // console.log(`setMCUAutoEnable:${JSON.stringify(jsondata)})`);
         await websocket.send(JSON.stringify(jsondata));
     }
     catch (error) {
-        console.log("setMCUTimerEnable - failed to connect to websockets");
+        console.log("setMCUAutoEnable - failed to connect to websockets");
     }
 }
 
 // send updated settings to the MCU 
-async function setMCUSettings(timingConfig) {
+export async function setMCUSettings(timingConfig) {
     // get the various settings from the DOM
     let jsondata = {'type': 'chg_settings',
         'timeslots': timingConfig.timeslots,
@@ -131,14 +139,14 @@ async function setMCUSettings(timingConfig) {
 /*
 manually set the relay for the set duration.
 */
-async function setMCURelay(state) {
+export async function setMCURelay(state, duration=1) {
     let jsondata = {'type': 'relay',
         'relay_status': state};
     console.log(jsondata);
     try {
         await websocket.send(JSON.stringify(jsondata));
         if (state) {
-            setRelayTimeout = setTimeout(setMCURelay, timingConfig.duration*1000, false);
+            setRelayTimeout = setTimeout(setMCURelay, duration*1000, false);
         }
         else {
             clearTimeout(setRelayTimeout);

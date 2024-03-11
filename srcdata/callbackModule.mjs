@@ -1,32 +1,38 @@
-import * as cfgMod from "./configModule.mjs";
 import * as wsMod from "./websocketModule.mjs";
 import * as uicMod from "./uiControllerModule.mjs";
+import * as cfgMod from "./configModule.mjs";
 
-function changeUseNTP(event) {
+export function changeUseNTP(event) {
+    // alert("changeNTP");     
     let clicked = $(event.target);
     useNTP = $(clicked).prop('checked');
     cfgMod.setUseNTP(useNTP);
-    uicMod.loadUseNTPStatus(useNTP);
+    uicMod.refreshNTPDisplay(useNTP);
 }
 
-function changeUserDateTime(event) {
-    // alert($("#userDateTime").val());
+export function changeUserDateTime(event) {
+    alert($("#userDateTime").val());
 }
 
 // toggle the automatic timer of the MCU
-function clickTimerEnable(event) {
+export function clickAutoEnable(event) {
+    // console.log("autoenabled");
+    let autoEnabled = cfgMod.getAutoEnabled();
     autoEnabled = !autoEnabled;
+    cfgMod.setAutoEnabled(autoEnabled);
+    uicMod.refreshAutoEnableDisplay(autoEnabled);
+    wsMod.setMCUAutoEnable(autoEnabled);
 }
 
-function clickCloseRelayBtn(event) {
+export function clickCloseRelayBtn(event) {
 
 }
 
-function clickOpenRelayBtn(event) {
+export function clickOpenRelayBtn(event) {
 
 }
 
-function clicktimeBtn(event) {
+export function clicktimeBtn(event) {
     let clickedTimeslot = $(event.currentTarget);
     let timeslot = parseInt($(clickedTimeslot).find('.tIndex').text());
     let curTimeslotVal = getTimeslot(timeslot);
@@ -36,29 +42,37 @@ function clicktimeBtn(event) {
     loadAllTimeslotsDisplay(timeslot);
 }
 
-function inputIntervalDuration(event) {
+export function inputIntervalDuration(event) {
     refreshDurationDisplay();
 }
 
-function changeIntervalDuration(event) {
+export function changeIntervalDuration(event) {
     setDuration($("#intervalDuration").val());
 }
 
-function changeMaxIntervalDuration(event) {
+export function changeMaxIntervalDuration(event) {
     refreshMaxDurationDisplay();
 }   
 
-function changeGMTOffset(event) {
+export function changeGMTOffset(event) {
     setGMTOffset($("#GMTOffset").val());
 }
 
-function clickSaveBtn(event) {
+export function clickSaveBtn(event) {
     updateSettings();
     requestTimingConfig();
 }
 
+export async function requestStatusInterval() {
+    await wsMod.requestMCUStatus();
+    let autoEnabled = cfgMod.getAutoEnabled();
+    // console.log(`autoEnabled1=${autoEnabled}`); 
+    uicMod.refreshAutoEnableDisplay(autoEnabled);
+}
 
-
+export async function requestTimeInterval() {
+    await wsMod.requestMCUTime();
+}
 
 
 
