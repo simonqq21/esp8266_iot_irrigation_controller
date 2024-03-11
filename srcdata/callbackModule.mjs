@@ -3,11 +3,10 @@ import * as uicMod from "./uiControllerModule.mjs";
 import * as cfgMod from "./configModule.mjs";
 
 export function changeUseNTP(event) {
-    // alert("changeNTP");     
-    let clicked = $(event.target);
-    useNTP = $(clicked).prop('checked');
+    useNTP = $(event.target).prop('checked');
     cfgMod.setUseNTP(useNTP);
     uicMod.refreshNTPDisplay(useNTP);
+    // alert(useNTP);  
 }
 
 export function changeUserDateTime(event) {
@@ -24,12 +23,18 @@ export function clickAutoEnable(event) {
     wsMod.setMCUAutoEnable(autoEnabled);
 }
 
-export function clickCloseRelayBtn(event) {
+export async function clickCloseRelayBtn(event) {
+    let duration = cfgMod.getDuration();
+    await wsMod.setMCURelay(true, duration);
+    let relayStatus = cfgMod.getRelayStatus();
+    uicMod.showPopupDisplay(`Set relay to ${relayStatus}.`);
 
 }
 
-export function clickOpenRelayBtn(event) {
-
+export async function clickOpenRelayBtn(event) {
+    await wsMod.setMCURelay(false);
+    let relayStatus = cfgMod.getRelayStatus();
+    uicMod.showPopupDisplay(`Set relay to ${relayStatus}.`);
 }
 
 export function clicktimeBtn(event) {
@@ -43,11 +48,13 @@ export function clicktimeBtn(event) {
 }
 
 export function inputIntervalDuration(event) {
-    refreshDurationDisplay();
+    uicMod.refreshDurationDisplayText();
 }
 
 export function changeIntervalDuration(event) {
-    setDuration($("#intervalDuration").val());
+    let duration = $(event.target).val();
+    alert(`newduration=${duration}`);
+    cfgMod.setDuration(duration);
 }
 
 export function changeMaxIntervalDuration(event) {
@@ -65,9 +72,8 @@ export function clickSaveBtn(event) {
 
 export async function requestStatusInterval() {
     await wsMod.requestMCUStatus();
-    let autoEnabled = cfgMod.getAutoEnabled();
-    // console.log(`autoEnabled1=${autoEnabled}`); 
-    uicMod.refreshAutoEnableDisplay(autoEnabled);
+    let relayStatus = cfgMod.getRelayStatus();
+    uicMod.refreshRelayDisplay(relayStatus);
 }
 
 export async function requestTimeInterval() {

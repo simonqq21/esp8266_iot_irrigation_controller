@@ -4,7 +4,7 @@ import * as cfgMod from "./configModule.mjs";
 
 export let gateway = `ws://192.168.5.75:5555/ws`; 
 export let websocket;
-export let debug = true; 
+export let debug = false; 
 
 let setRelayTimeout; 
 
@@ -12,7 +12,7 @@ let setRelayTimeout;
 // Websocket initialization functions
 // initialize websocket 
 // {receiveTime, receiveStatus, receiveSettings}
-export function initWebSocket() {
+export async function initWebSocket() {
     console.log('Websocket initializing');
     websocket = new WebSocket(gateway);
     websocket.onopen = onOpen; 
@@ -75,6 +75,7 @@ export async function requestMCUStatus() {
         await websocket.send(JSON.stringify(jsondata));
     } catch (error) {
         console.log("requestMCUStatus - failed to connect to websockets");
+        console.log(error);
     }
 }
 
@@ -142,7 +143,7 @@ manually set the relay for the set duration.
 export async function setMCURelay(state, duration=1) {
     let jsondata = {'type': 'relay',
         'relay_status': state};
-    console.log(jsondata);
+        if (debug) {console.log(jsondata);}
     try {
         await websocket.send(JSON.stringify(jsondata));
         if (state) {

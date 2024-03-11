@@ -72,6 +72,10 @@ export function getTimeslot(timeslot) {
     return status;
 }
 
+export function setRelayStatus(status) {
+    relayStatus = status;
+}
+
 export function setAutoEnabled(newAutoEnabled) {
     autoEnabled = newAutoEnabled;
 }
