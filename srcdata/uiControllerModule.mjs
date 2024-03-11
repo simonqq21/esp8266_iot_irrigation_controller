@@ -2,20 +2,14 @@ import * as cfgMod from "./configModule.mjs";
 let maxDuration = 20;
 let popupTimeout;
 
-$(document).ready(function() {
-    $("#maxIntervalDuration").val(maxDuration);
-    refreshMaxDurationDisplay();
-});
-
 // refresh all values into display upon webpage load
 export function refreshAllElements() {
-    refreshAutoEnableDisplay();
-    refreshRelayDisplay();
+    refreshAutoEnableDisplay(cfgMod.getAutoEnabled());
+    refreshRelayDisplay(cfgMod.getRelayStatus());
     refreshAllTimeslotsDisplay();
-    refreshDurationDisplayDisplay();
-    refreshGMTOffsetDisplay();
-    refreshDurationDisplay();
-    refreshMaxDurationDisplay();
+    refreshDurationDisplay(cfgMod.getDuration());
+    refreshGMTOffsetDisplay(cfgMod.getGMTOffset());
+    refreshMaxDurationDisplay(cfgMod.getDuration());
 }
 
 // refresh the timer enable status on the webpage
@@ -69,12 +63,11 @@ export function refreshDurationDisplayText() {
 
 export function refreshMaxDurationDisplay(curDuration) {
     let maxDurationVal = parseInt($("#maxIntervalDuration").val());
-    $('#intervalDuration').attr('max', maxDurationVal);
 
     if (curDuration > maxDurationVal) {
-        setDuration(maxDurationVal);
-        refreshDurationDisplay();
+        refreshDurationDisplay(maxDurationVal);
     }
+    $('#intervalDuration').attr('max', maxDurationVal);
 }
 
 // refresh GMT offset and display on the webpage

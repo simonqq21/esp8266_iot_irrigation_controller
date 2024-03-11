@@ -53,16 +53,23 @@ export function inputIntervalDuration(event) {
 
 export function changeIntervalDuration(event) {
     let duration = $(event.target).val();
-    alert(`newduration=${duration}`);
+    // alert(`newduration=${duration}`);
     cfgMod.setDuration(duration);
 }
 
 export function changeMaxIntervalDuration(event) {
-    refreshMaxDurationDisplay();
+    let curDuration = cfgMod.getDuration();
+    let maxDuration = $(event.target).val();
+    uicMod.refreshMaxDurationDisplay(curDuration);
+    if (curDuration > maxDuration) {
+        cfgMod.setDuration(maxDuration);
+    }
 }   
 
 export function changeGMTOffset(event) {
-    setGMTOffset($("#GMTOffset").val());
+    let gmtOffset = $(event.target).val();
+    // alert(gmtOffset);
+    setGMTOffset(gmtOffset);
 }
 
 export function clickSaveBtn(event) {
