@@ -1,4 +1,6 @@
 import * as cfgMod from "./configModule.mjs";
+import * as cbMod from "./callbackModule.mjs";
+
 let maxDuration = 20;
 let popupTimeout;
 
@@ -6,9 +8,10 @@ let popupTimeout;
 export function refreshAllElements() {
     refreshAutoEnableDisplay(cfgMod.getAutoEnabled());
     refreshRelayDisplay(cfgMod.getRelayStatus());
-    refreshAllTimeslotsDisplay();
+    cbMod.refreshAllTimeslotsDisplay();
     refreshDurationDisplay(cfgMod.getDuration());
     refreshGMTOffsetDisplay(cfgMod.getGMTOffset());
+    setMaxDurationDisplay(maxDuration);
     refreshMaxDurationDisplay(cfgMod.getDuration());
 }
 
@@ -61,6 +64,10 @@ export function refreshDurationDisplayText() {
     $("#intervalDurationDisplay").text($("#intervalDuration").val());
 }
 
+export function setMaxDurationDisplay(maxDuration) {
+    $("#maxIntervalDuration").val(maxDuration);
+}
+
 export function refreshMaxDurationDisplay(curDuration) {
     let maxDurationVal = parseInt($("#maxIntervalDuration").val());
 
@@ -94,13 +101,6 @@ export function showPopupDisplay(text) {
 // hide popup
 export function hidePopupDisplay() {
     $("#popup").hide();
-}
-
-// refresh all timeslots and display on the webpage
-export function refreshAllTimeslotsDisplay() {
-    for (let i=0;i<24;i++) {
-        refreshTimeslotDisplay(i);
-    }
 }
 
 // display the timeslot state for a particular timeslot

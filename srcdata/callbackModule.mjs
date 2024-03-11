@@ -10,7 +10,8 @@ export function changeUseNTP(event) {
 }
 
 export function changeUserDateTime(event) {
-    alert($("#userDateTime").val());
+    let userDT = $("#userDateTime").val();
+    cfgMod.printTime(userDT);
 }
 
 // toggle the automatic timer of the MCU
@@ -87,7 +88,13 @@ export async function requestTimeInterval() {
     await wsMod.requestMCUTime();
 }
 
-
+// refresh all timeslots and display on the webpage
+export function refreshAllTimeslotsDisplay() {
+    for (let i=0;i<24;i++) {
+        let state = cfgMod.getTimeslot(i);
+        uicMod.refreshTimeslotDisplay(i, state);
+    }
+}
 
 
 

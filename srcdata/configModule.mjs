@@ -16,6 +16,11 @@ export function saveTime(jsonMsg) {
     systemDate.setHours(jsonMsg.hour);
     systemDate.setMinutes(jsonMsg.min);
     systemDate.setSeconds(jsonMsg.sec);
+    // console.log(printTime(systemDate));
+}
+
+export function printTime(dt) {
+    return `${dt.getFullYear()}/${dt.getMonth()}/${dt.getDate()} ${dt.getHours()}:${dt.getMinutes()}:${dt.getSeconds()}`;
 }
 
 // save status variables from JSON message

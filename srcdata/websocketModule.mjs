@@ -21,11 +21,11 @@ export async function initWebSocket() {
 }
 
 // runs when websocket opens
-function onOpen(event) {
+async function onOpen(event) {
     // grab the settings from the MCU, then refresh the webpage elements.
-    requestMCUTime();
-    requestMCUStatus();
-    requestMCUTimingConfig();
+    await requestMCUTime();
+    await requestMCUStatus();
+    await requestMCUTimingConfig();
 }
 // runs when websocket closes
 function onClose(event) {
