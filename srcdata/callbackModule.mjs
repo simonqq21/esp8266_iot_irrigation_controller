@@ -17,9 +17,9 @@ export function changeUserDateTime(event) {
 // toggle the automatic timer of the MCU
 export function clickAutoEnable(event) {
     // console.log("autoenabled");
-    let autoEnabled = cfgMod.getAutoEnabled();
+    let autoEnabled = cfgMod.getAutoEnable();
     autoEnabled = !autoEnabled;
-    cfgMod.setAutoEnabled(autoEnabled);
+    cfgMod.setAutoEnable(autoEnabled);
     uicMod.refreshAutoEnableDisplay(autoEnabled);
     wsMod.setMCUAutoEnable(autoEnabled);
 }

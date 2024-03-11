@@ -67,7 +67,7 @@ $(document).ready(async function() {
     });
 
     // set the intervals here 
-    setInterval(cbMod.requestStatusInterval, 10);
+    setInterval(cbMod.requestStatusInterval, 100);
     setInterval(cbMod.requestTimeInterval, 500);
 
     setTimeout(uicMod.refreshAllElements, 1000);

@@ -6,7 +6,7 @@ let popupTimeout;
 
 // refresh all values into display upon webpage load
 export function refreshAllElements() {
-    refreshAutoEnableDisplay(cfgMod.getAutoEnabled());
+    refreshAutoEnableDisplay(cfgMod.getAutoEnable());
     refreshRelayDisplay(cfgMod.getRelayStatus());
     cbMod.refreshAllTimeslotsDisplay();
     refreshDurationDisplay(cfgMod.getDuration());

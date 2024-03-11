@@ -24,6 +24,7 @@ export async function initWebSocket() {
 async function onOpen(event) {
     // grab the settings from the MCU, then refresh the webpage elements.
     await requestMCUTime();
+    await requestMCUAutoEnable();
     await requestMCUStatus();
     await requestMCUTimingConfig();
 }
@@ -38,15 +39,20 @@ function onMessage(event) {
     let msg = JSON.parse(event.data);
     let msgType = msg['type'];
     if (debug) {console.log(msg);}
-    // update status 
+    // update time
     if (msgType == 'time') {
         cfgMod.saveTime(msg);
         // receiveTime(msg);     
     }
+    // update status 
     else if (msgType == 'status') {
         cfgMod.saveStatus(msg);
         // console.log(`autoenabled=${JSON.stringify(msg)}`);
         // receiveStatus(msg);     
+    }
+    // update auto enable setting
+    else if (msgType == 'auto_enable') {
+        cfgMod.saveAutoEnable(msg);
     }
     // update settings
     else if (msgType == 'settings') {
@@ -65,6 +71,15 @@ export async function requestMCUTime() {
         await websocket.send(JSON.stringify(jsondata));
     } catch (error) {
         console.log("requestMCUTime - failed to connect to websockets");
+    }
+}
+
+export async function requestMCUAutoEnable() {
+    let jsondata = {'type': 'auto_enable'};
+    try {
+        await websocket.send(JSON.stringify(jsondata));
+    } catch (error) {
+        console.log("requestAutoEnable - failed to connect to websockets");
     }
 }
 

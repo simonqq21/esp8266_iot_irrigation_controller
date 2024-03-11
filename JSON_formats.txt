@@ -59,6 +59,16 @@
 
 
  - From MCU to browser 
+   - sending system time from MCU to browser 
+   {
+    'type': 'time', 
+    'year': int, 
+    'month': int from 1-12,
+    'day': int from 1-31,
+    'hour': int from 0-23,
+    'min': int from 0-59,
+    'sec': int from 0-59
+   }
   - sending relay status from MCU to browser
   {
     'type': 'status',
@@ -77,14 +87,4 @@
     'gmt_offset': int from -12 to 12,
     'use_ntp': bool
   }
-   - sending system time from MCU to browser 
-   {
-    'type': 'time', 
-    'year': int, 
-    'month': int from 1-12,
-    'day': int from 1-31,
-    'hour': int from 0-23,
-    'min': int from 0-59,
-    'sec': int from 0-59
-   }
 */

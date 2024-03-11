@@ -8,6 +8,10 @@ let timingConfig = {
 }
 let systemDate = new Date();
 
+export function printTime(dt) {
+    return `${dt.getFullYear()}/${dt.getMonth()}/${dt.getDate()} ${dt.getHours()}:${dt.getMinutes()}:${dt.getSeconds()}`;
+}
+
 // save time from JSON message
 export function saveTime(jsonMsg) {
     systemDate.setFullYear(jsonMsg.year);
@@ -19,22 +23,22 @@ export function saveTime(jsonMsg) {
     // console.log(printTime(systemDate));
 }
 
-export function printTime(dt) {
-    return `${dt.getFullYear()}/${dt.getMonth()}/${dt.getDate()} ${dt.getHours()}:${dt.getMinutes()}:${dt.getSeconds()}`;
-}
-
 // save status variables from JSON message
 export function saveStatus(jsonMsg) {
-    relayStatus = jsonMsg["relay_status"];
-    autoEnabled = jsonMsg["auto_enabled"];
+    setRelayStatus(jsonMsg.relay_status);
+}
+
+export function saveAutoEnable(jsonMsg) {
+    // alert(jsonMsg.auto_enabled);
+    setAutoEnable(jsonMsg.auto_enabled);
 }
 
 // save timing config from JSON message
 export function saveTimingConfig(jsonMsg) {
-    setTimeslots(jsonMsg["timeslots"]);
-    setDuration(jsonMsg["duration"]);
-    setGMTOffset(jsonMsg["gmt_offset"]);
-    setUseNTP(jsonMsg["use_ntp"]);
+    setTimeslots(jsonMsg.timeslots);
+    setDuration(jsonMsg.duration);
+    setGMTOffset(jsonMsg.gmt_offset);
+    setUseNTP(jsonMsg.use_ntp);
 }
 
 // get time from config
@@ -43,7 +47,7 @@ export function getTime() {
 }
 
 // get auto timer enabled from config
-export function getAutoEnabled() {
+export function getAutoEnable() {
     return autoEnabled;
 }
 
@@ -81,7 +85,7 @@ export function setRelayStatus(status) {
     relayStatus = status;
 }
 
-export function setAutoEnabled(newAutoEnabled) {
+export function setAutoEnable(newAutoEnabled) {
     autoEnabled = newAutoEnabled;
 }
 
