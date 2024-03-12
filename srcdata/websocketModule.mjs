@@ -27,6 +27,7 @@ async function onOpen(event) {
     await requestMCUAutoEnable();
     await requestMCUStatus();
     await requestMCUTimingConfig();
+    setTimeout(uicMod.refreshAllElements, 120);
 }
 // runs when websocket closes
 function onClose(event) {
@@ -41,7 +42,7 @@ function onMessage(event) {
     if (debug) {console.log(msg);}
     // update time
     if (msgType == 'time') {
-        cfgMod.saveTime(msg);
+        cfgMod.saveDateTime(msg);
         // receiveTime(msg);     
     }
     // update status 
@@ -105,12 +106,12 @@ export async function requestMCUTimingConfig() {
 }
 
 // manually set the system time the MCU
-export async function setMCUSystemTime(systemDate) {
+export async function setMCUDateTime(systemDate) {
     // send value to MCU 
     let jsondata = {
         'type': 'chg_time',
         'year': systemDate.getFullYear(),
-        'month': systemDate.getMonth(),
+        'month': systemDate.getMonth()+1,
         'day': systemDate.getDate(),
         'hour': systemDate.getHours(),
         'minute': systemDate.getMinutes(),
@@ -138,7 +139,7 @@ export async function setMCUAutoEnable(autoEnabled) {
 }
 
 // send updated settings to the MCU 
-export async function setMCUSettings(timingConfig) {
+export async function setMCUTimingConfig(timingConfig) {
     // get the various settings from the DOM
     let jsondata = {'type': 'chg_settings',
         'timeslots': timingConfig.timeslots,
@@ -172,39 +173,4 @@ export async function setMCURelay(state, duration=1) {
     }
 }
 
-/*
 
-
-// send updated settings to the MCU 
-async function setMCUSettings(timingConfig) {
-    // get the various settings from the DOM
-    let jsondata = {'type': 'chg_settings',
-        'timeslots': timingConfig.timeslots,
-        'duration': timingConfig.duration,
-        'gmt_offset': timingConfig.gmt_offset};
-    try {
-        await websocket.send(JSON.stringify(jsondata));
-        showPopup("Settings saved successfully.");
-    } catch (error) {
-        console.log("setMCUSettings - failed to connect to websockets");
-    }
-}
-
-async function setMCURelay(state) {
-    let jsondata = {'type': 'relay',
-        'relay_status': state};
-    console.log(jsondata);
-    try {
-        await websocket.send(JSON.stringify(jsondata));
-        showPopup(`Set relay to ${state}.`);
-        if (state) {
-            setRelayTimeout = setTimeout(setMCURelay, timingConfig.duration*1000, false);
-        }
-        else {
-            clearTimeout(setRelayTimeout);
-        }
-    } catch (error) {
-        console.log("setMCURelay - failed to connect to websockets");
-    }
-}
-*/

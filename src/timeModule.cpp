@@ -2,12 +2,14 @@
 #include "timeModule.h"
 #include <EEPROM.h>
 #include "settingsModule.h"
+#include "wsModule.h"
 #include "constants.h"
 
 bool relayClosed;
 extern bool autoEnabled;
 extern timingconfig tC;
 int curTimeslotIndex, prevTimeslotIndex;
+extern StaticJsonDocument<150> inputDoc;
 
 // RTC 
 RTC_DS1307 rtc; 
@@ -108,6 +110,16 @@ void adjustRTCWithNTP(NTPClient timeClient, RTC_DS1307 rtc) {
   _second = timeClient.getSeconds();
   adjustRTC(_year, _month, _day, _hour, _minute, _second);
   Serial.println("time adjusted from NTP to RTC.");
+}
+
+void adjustRTCFromJSON() {
+  _year = inputDoc["year"];
+  _month = inputDoc["month"];
+  _day = inputDoc["day"];
+  _hour = inputDoc["hour"];
+  _minute = inputDoc["minute"];
+  _second = inputDoc["second"];
+  adjustRTC(_year, _month, _day, _hour, _minute, _second);
 }
 
 void adjustRTC(int _year, int _month, int _day, int _hour, int _minute, int _second) {

@@ -12,7 +12,11 @@ extern StaticJsonDocument<150> inputDoc;
 timingconfig tC;
 bool autoEnabled; 
 
-void printTimingConfig() {
+void printConfig() {
+  Serial.print("auto_enabled = ");
+  Serial.print(autoEnabled);
+  Serial.print(" ");
+  
   Serial.print("timeslots bytes = ");
   for (int i=0;i<3;i++) {
     Serial.print(tC.timeslots[i]);  
@@ -46,7 +50,7 @@ void setAutoEnable() {
 }
 
 // get timing configuration from the EEPROM
-void getTimingConfig() {
+void getConfig() {
   EEPROM.get(configAddr, tC);
 }
 

@@ -85,7 +85,9 @@ export function refreshGMTOffsetDisplay(gmt_offset) {
 
 // update time in webpage 
 export function setTimeDisplay(year, month, day, hour, minute, second) {
-    let timeStr = `${year}/${month}/${day} ${hour}:${minute}:${second}`;
+    let timeStr = `${year}/${month.toString().padStart(2, '0')}` +
+    `/${day.toString().padStart(2, '0')} ${hour.toString().padStart(2, '0')}:` +
+    `${minute.toString().padStart(2, '0')}:${second.toString().padStart(2, '0')}`;
     console.log(timeStr);
     $("#time").text(timeStr);
 }

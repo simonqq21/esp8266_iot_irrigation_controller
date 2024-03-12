@@ -9,7 +9,6 @@ Modules:
 */
 import * as wsMod from "./websocketModule.mjs";
 import * as uicMod from "./uiControllerModule.mjs";
-import * as cfgMod from "./configModule.mjs";
 import * as cbMod from "./callbackModule.mjs";
 
 $(document).ready(async function() {
@@ -69,8 +68,7 @@ $(document).ready(async function() {
     // set the intervals here 
     setInterval(cbMod.requestStatusInterval, 100);
     setInterval(cbMod.requestTimeInterval, 500);
-
-    setTimeout(uicMod.refreshAllElements, 100);
+    setInterval(cbMod.refreshTimeDisplayInterval, 100);
 });
 
 

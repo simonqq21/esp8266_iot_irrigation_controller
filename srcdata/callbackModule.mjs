@@ -6,12 +6,13 @@ export function changeUseNTP(event) {
     useNTP = $(event.target).prop('checked');
     cfgMod.setUseNTP(useNTP);
     uicMod.refreshNTPDisplay(useNTP);
-    // alert(useNTP);  
 }
 
 export function changeUserDateTime(event) {
-    let userDT = $("#userDateTime").val();
-    cfgMod.printTime(userDT);
+    let userDTStr = $("#userDateTime").val();
+    let userDT = new Date(userDTStr);
+    cfgMod.setDateTime(userDT);
+    // console.log(cfgMod.printTime(userDT));
 }
 
 // toggle the automatic timer of the MCU
@@ -29,7 +30,6 @@ export async function clickCloseRelayBtn(event) {
     await wsMod.setMCURelay(true, duration);
     let relayStatus = cfgMod.getRelayStatus();
     uicMod.showPopupDisplay(`Set relay to ${relayStatus}.`);
-
 }
 
 export async function clickOpenRelayBtn(event) {
@@ -41,11 +41,9 @@ export async function clickOpenRelayBtn(event) {
 export function clicktimeBtn(event) {
     let clickedTimeslot = $(event.currentTarget);
     let timeslot = parseInt($(clickedTimeslot).find('.tIndex').text());
-    let curTimeslotVal = getTimeslot(timeslot);
-    setTimeslot(timeslot, !curTimeslotVal);
-    console.log(curTimeslotVal);
-    console.log(timingConfig.timeslots);
-    loadAllTimeslotsDisplay(timeslot);
+    let curTimeslotVal = cfgMod.getTimeslot(timeslot);
+    cfgMod.setTimeslot(timeslot, !curTimeslotVal);
+    refreshAllTimeslotsDisplay();
 }
 
 export function inputIntervalDuration(event) {
@@ -54,7 +52,6 @@ export function inputIntervalDuration(event) {
 
 export function changeIntervalDuration(event) {
     let duration = $(event.target).val();
-    // alert(`newduration=${duration}`);
     cfgMod.setDuration(duration);
 }
 
@@ -69,13 +66,15 @@ export function changeMaxIntervalDuration(event) {
 
 export function changeGMTOffset(event) {
     let gmtOffset = $(event.target).val();
-    // alert(gmtOffset);
-    setGMTOffset(gmtOffset);
+    cfgMod.setGMTOffset(gmtOffset);
 }
 
-export function clickSaveBtn(event) {
-    updateSettings();
-    requestTimingConfig();
+export async function clickSaveBtn(event) {
+    let curTimingConfig = cfgMod.getTimingConfig();
+    let curDate = cfgMod.getDateTime();
+    await wsMod.setMCUTimingConfig(curTimingConfig);
+    await wsMod.setMCUDateTime(curDate);
+    uicMod.showPopupDisplay(`Saved timing configuration.`);
 }
 
 export async function requestStatusInterval() {
@@ -96,6 +95,16 @@ export function refreshAllTimeslotsDisplay() {
     }
 }
 
+export function refreshTimeDisplayInterval() {
+    let dtnow = cfgMod.getDateTime();
+    let year = dtnow.getFullYear();
+    let month = dtnow.getMonth() + 1;
+    let date = dtnow.getDate();
+    let hours = dtnow.getHours();
+    let minutes = dtnow.getMinutes();
+    let seconds = dtnow.getSeconds();
+    uicMod.setTimeDisplay(year, month, date, hours, minutes, seconds);
+}
 
 
 

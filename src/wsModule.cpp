@@ -59,7 +59,9 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
     // send status JSON
     if (commandType == "time") {
       sendSystemDateTime();
-      
+    }
+    else if (commandType == "chg_time") {
+      adjustRTCFromJSON();
     }
     // else if (command)
     else if (commandType == "status") {
@@ -83,7 +85,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       // if (DEBUG) {
       //   Serial.println("sending settings");
       // }
-      getTimingConfig();  
+      getConfig();  
       sendTimingConfig();
     }
     // save persistent settings to EEPROM 
@@ -91,7 +93,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       setTimingConfig();
       if (DEBUG) {
         Serial.println("set default settings to");
-        printTimingConfig();
+        printConfig();
       }
     }
     // close the relay momentarily from user manual input 

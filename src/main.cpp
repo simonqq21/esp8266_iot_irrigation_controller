@@ -91,12 +91,10 @@ void setup() {
   autoEnableAddr = configAddr + sizeof(timingconfig);
   
   // load previous timing configuration from EEPROM if it exists
-  getTimingConfig();
+  getConfig();
   getAutoEnable();
   Serial.println("configuration loaded from EEPROM: ");
-
-  getTimingConfig();
-  printTimingConfig();
+  printConfig();
 
   // pins
   pinMode(RELAY_PIN, OUTPUT);

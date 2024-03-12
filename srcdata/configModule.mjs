@@ -9,11 +9,12 @@ let timingConfig = {
 let systemDate = new Date();
 
 export function printTime(dt) {
-    return `${dt.getFullYear()}/${dt.getMonth()}/${dt.getDate()} ${dt.getHours()}:${dt.getMinutes()}:${dt.getSeconds()}`;
+    return `${dt.getFullYear()}/${dt.getMonth()+1}/${dt.getDate()} ` +
+    `${dt.getHours()}:${dt.getMinutes()}:${dt.getSeconds()}`;
 }
 
 // save time from JSON message
-export function saveTime(jsonMsg) {
+export function saveDateTime(jsonMsg) {
     systemDate.setFullYear(jsonMsg.year);
     systemDate.setMonth(jsonMsg.month);
     systemDate.setDate(jsonMsg.day);
@@ -42,7 +43,7 @@ export function saveTimingConfig(jsonMsg) {
 }
 
 // get time from config
-export function getTime() {
+export function getDateTime() {
     return systemDate;
 }
 
@@ -79,6 +80,10 @@ export function getTimeslot(timeslot) {
     let bitIndex = parseInt(timeslot % 8);
     let status = (timingConfig.timeslots[byteIndex] >> bitIndex) & 1;
     return status;
+}
+
+export function setDateTime(newDT) {
+    systemDate = newDT;
 }
 
 export function setRelayStatus(status) {
@@ -121,71 +126,3 @@ export function setTimeslot(timeslot, state) {
         timingConfig.timeslots[byteIndex] = timingConfig.timeslots[byteIndex] & ~mask;
     }
 }
-
-
-
-
-
-/*
-// get time from JSON message
-function receiveTime(jsonMsg) {
-    let year = String(jsonMsg.year).padStart(4, '0');
-    let month = String(jsonMsg.month).padStart(2, '0');
-    let day = String(jsonMsg.day).padStart(2, '0');
-    let hour = String(jsonMsg.hour).padStart(2, '0');
-    let min = String(jsonMsg.min).padStart(2, '0');
-    let sec = String(jsonMsg.sec).padStart(2, '0');
-    // update time in webpage 
-    setTime(year, month, day, hour, min, sec);
-}
-
-// get various status variables from JSON message
-function receiveStatus(jsonMsg) {
-    relayStatus = jsonMsg["relay_status"];
-    useNTP = jsonMsg["use_ntp"];
-    autoEnabled = jsonMsg["auto_enabled"];
-    loadRelayStatus();
-    loadUseNTPStatus();
-    loadTimerEnableStatus();
-}
-
-function receiveSettings(jsonMsg) {
-    console.log(`jsonMsg tC = ${JSON.stringify(jsonMsg)}`);
-    timingConfig.timeslots = jsonMsg["timeslots"];
-    timingConfig.duration = jsonMsg["duration"];
-    timingConfig.gmt_offset = jsonMsg["gmt_offset"]; 
-    loadAllTimeslotsDisplay();
-    loadDurationDisplay();
-    loadGMTOffset();
-}
-
-export function setDuration(duration) {
-    console.log('set duration');
-    timingConfig.duration = duration; 
-    refreshDurationDisplay();
-}
-
-export function setGMTOffset(offset) {
-    timingConfig.gmt_offset = offset;
-}
-
-function getTimeslot(timeslot) {
-    let byteIndex = parseInt(timeslot / 8);
-    let bitIndex = parseInt(timeslot % 8);
-    let status = (timingConfig.timeslots[byteIndex] >> bitIndex) & 1;
-    return status;
-}
-
-function setTimeslot(timeslot, state) {
-    let byteIndex = parseInt(timeslot / 8); 
-    let bitIndex = parseInt(timeslot % 8);
-    let mask = 1 << bitIndex;
-    console.log(`mask=${mask}`);
-    if (state) {
-        timingConfig.timeslots[byteIndex] = timingConfig.timeslots[byteIndex] | mask;
-    }
-    else {
-        timingConfig.timeslots[byteIndex] = timingConfig.timeslots[byteIndex] & ~mask;
-    }
-}
-*/

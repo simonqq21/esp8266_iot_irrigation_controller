@@ -55,10 +55,10 @@ typedef struct {
   bool useNTP;
 } timingconfig;
 
-void printTimingConfig();
+void printConfig();
 void getAutoEnable();
 void setAutoEnable();
-void getTimingConfig();
+void getConfig();
 void setTimingConfig();
 bool checkTimeslot(int timeslot);
 bool* getActiveTimeslots();
