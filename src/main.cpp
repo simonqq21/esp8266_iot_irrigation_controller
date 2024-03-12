@@ -137,7 +137,7 @@ void setup() {
   // init RTC 
   while (!rtc.begin()) {
     Serial.println("Couldn't find RTC.");
-    delay(500);
+    delay(1000);
   }
 
   timeClient.begin();

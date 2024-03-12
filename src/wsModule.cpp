@@ -61,6 +61,7 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       sendSystemDateTime();
       
     }
+    // else if (command)
     else if (commandType == "status") {
       sendStatus();
     }

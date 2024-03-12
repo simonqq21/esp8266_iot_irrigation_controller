@@ -70,7 +70,7 @@ $(document).ready(async function() {
     setInterval(cbMod.requestStatusInterval, 100);
     setInterval(cbMod.requestTimeInterval, 500);
 
-    setTimeout(uicMod.refreshAllElements, 1000);
+    setTimeout(uicMod.refreshAllElements, 100);
 });
 
 

@@ -126,7 +126,7 @@ export async function setMCUSystemTime(systemDate) {
 
 // toggle the automatic timer of the MCU
 export async function setMCUAutoEnable(autoEnabled) {
-    let jsondata = {'type': 'timer_auto',
+    let jsondata = {'type': 'chg_auto_enable',
         'auto_enabled': autoEnabled};   
     try {
         // console.log(`setMCUAutoEnable:${JSON.stringify(jsondata)})`);
