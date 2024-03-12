@@ -121,7 +121,7 @@ export async function setMCUDateTime(systemDate) {
     try {
         await websocket.send(JSON.stringify(jsondata));
     } catch (error) {
-        console.log("setMCUSystemTime - failed to connect to websockets");
+        console.log("setMCUDateTime - failed to connect to websockets");
     }
 }
 

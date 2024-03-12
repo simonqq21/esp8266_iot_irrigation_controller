@@ -141,9 +141,6 @@ void setup() {
   timeClient.begin();
   timeClient.setTimeOffset(tC.gmtOffset*3600); // GMT+8
   updateNTPTime(); 
-
-  // testing 
-  adjustRTC(2024, 3, 6, 23, 59, 45);
   
   getCurDateTime();
   printRTCTime(dtnow);

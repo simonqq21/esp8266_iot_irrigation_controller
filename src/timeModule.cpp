@@ -120,6 +120,9 @@ void adjustRTCFromJSON() {
   _minute = inputDoc["minute"];
   _second = inputDoc["second"];
   adjustRTC(_year, _month, _day, _hour, _minute, _second);
+  getCurDateTime();
+  Serial.println("chg_time");
+  printRTCTime(dtnow);
 }
 
 void adjustRTC(int _year, int _month, int _day, int _hour, int _minute, int _second) {

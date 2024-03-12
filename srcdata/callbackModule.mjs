@@ -73,6 +73,7 @@ export async function clickSaveBtn(event) {
     let curTimingConfig = cfgMod.getTimingConfig();
     let curDate = cfgMod.getDateTime();
     await wsMod.setMCUTimingConfig(curTimingConfig);
+    console.log('x'+curDate);
     await wsMod.setMCUDateTime(curDate);
     uicMod.showPopupDisplay(`Saved timing configuration.`);
 }
