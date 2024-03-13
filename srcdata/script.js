@@ -66,9 +66,9 @@ $(document).ready(async function() {
     });
 
     // set the intervals here 
-    setInterval(cbMod.requestStatusInterval, 100);
+    setInterval(cbMod.requestStatusInterval, 500);
     setInterval(cbMod.requestTimeInterval, 500);
-    setInterval(cbMod.refreshTimeDisplayInterval, 100);
+    setInterval(cbMod.refreshTimeDisplayInterval, 500);
 });
 
 

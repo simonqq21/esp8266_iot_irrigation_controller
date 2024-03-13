@@ -71,10 +71,10 @@ export function changeGMTOffset(event) {
 
 export async function clickSaveBtn(event) {
     let curTimingConfig = cfgMod.getTimingConfig();
-    let curDate = cfgMod.getDateTime();
+    let newDate = getInputDate();
     await wsMod.setMCUTimingConfig(curTimingConfig);
-    console.log('x'+curDate);
-    await wsMod.setMCUDateTime(curDate);
+    console.log('x'+newDate);
+    await wsMod.setMCUDateTime(newDate);
     uicMod.showPopupDisplay(`Saved timing configuration.`);
 }
 
@@ -107,6 +107,10 @@ export function refreshTimeDisplayInterval() {
     uicMod.setTimeDisplay(year, month, date, hours, minutes, seconds);
 }
 
+export function getInputDate() {
+    let userDTStr = $("#userDateTime").val();
+    return new Date(userDTStr);
+}
 
 
 

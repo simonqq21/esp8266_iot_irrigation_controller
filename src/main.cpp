@@ -134,7 +134,7 @@ void setup() {
 
   // init RTC 
   while (!rtc.begin()) {
-    Serial.println("Couldn't find RTC.");
+    Serial.println("Couldn't findfind RTC.");
     delay(1000);
   }
 

@@ -16,7 +16,7 @@ export function printTime(dt) {
 // save time from JSON message
 export function saveDateTime(jsonMsg) {
     systemDate.setFullYear(jsonMsg.year);
-    systemDate.setMonth(jsonMsg.month);
+    systemDate.setMonth(jsonMsg.month - 1);
     systemDate.setDate(jsonMsg.day);
     systemDate.setHours(jsonMsg.hour);
     systemDate.setMinutes(jsonMsg.min);
