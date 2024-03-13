@@ -2,6 +2,7 @@
 #include <ArduinoJson.h>
 #include <EEPROM.h>
 #include "settingsModule.h"
+#include "timeModule.h"
 #include "constants.h"
 
 // EEPROM 
@@ -65,6 +66,9 @@ void setTimingConfig() {
   // printTimingConfig();
   EEPROM.put(configAddr, tC);
   EEPROM.commit();
+  if (tC.useNTP) {
+    updateNTPTime();
+  }
 }
 
 
