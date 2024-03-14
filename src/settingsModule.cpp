@@ -71,7 +71,6 @@ void setTimingConfig() {
   }
 }
 
-
 // check the state of a certain timeslot
 bool checkTimeslot(int timeslot) {
   bool status;
@@ -119,14 +118,9 @@ void setTimeslot(int timeslot, bool newState) {
   Serial.println(mask);
 }
 
-// set the duration of the timing configuration 
-void setDuration(int newDuration) {
-  tC.duration = newDuration;
-}
-
 // macro function to clear all timeslots in the timeslots and reset interval to 0
 void clearAllTimeslots() {
-  setDuration(0);
+  tC.duration = 0;
   for (int h=0; h<24; h++) {
     setTimeslot(h, 0);
   }

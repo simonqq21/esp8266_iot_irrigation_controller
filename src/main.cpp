@@ -127,24 +127,32 @@ void setup() {
     request->send(LittleFS, "/index.html", String(), false);});
   server.on("/styles.css", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(LittleFS, "/styles.css", "text/css", false);});
+
   server.on("/jquery.js", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(LittleFS, "/jquery.js", "text/javascript", false);});
+
   server.on("/s.js", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(LittleFS, "/s.js", "text/javascript", false);});
+    request->send(LittleFS, "/s.js", "module", false);});
+  server.on("/wsMod.mjs", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(LittleFS, "/wsMod.mjs", "module", false);});
+  server.on("/cfgMod.mjs", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(LittleFS, "/cfgMod.mjs", "module", false);});
+  server.on("/uicMod.mjs", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(LittleFS, "/uicMod.mjs", "module", false);});
+  server.on("/cbMod.mjs", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(LittleFS, "/cbMod.mjs", "module", false);});
+
   server.begin();
 
   // init RTC 
   Wire.begin();
-  delay(1000);
   while (!rtc.begin()) {
     Serial.println("Couldn't find RTC.");
     delay(500);
   }
 
   timeClient.begin();
-  
   updateNTPTime(); 
-  
   getCurDateTime();
   printRTCTime(dtnow);
 
@@ -164,7 +172,6 @@ void loop() {
   // websocket loop
   ws.cleanupClients();
   // IO functions
-
   controlRelay();
   controlLED();
   checkButton();

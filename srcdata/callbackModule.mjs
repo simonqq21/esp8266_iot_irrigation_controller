@@ -6,8 +6,6 @@ export function changeUseNTP(event) {
     useNTP = $(event.target).prop('checked');
     cfgMod.setUseNTP(useNTP);
     uicMod.refreshNTPDisplay(useNTP);
-    let dtnow = new Date();
-    // uicMod.
 }
 
 export function changeUserDateTime(event) {
@@ -30,14 +28,12 @@ export function clickAutoEnable(event) {
 export async function clickCloseRelayBtn(event) {
     let duration = cfgMod.getDuration();
     await wsMod.setMCURelay(true, duration);
-    let relayStatus = cfgMod.getRelayStatus();
-    uicMod.showPopupDisplay(`Set relay to ${relayStatus}.`);
+    uicMod.showPopupDisplay("Closed relay.");
 }
 
 export async function clickOpenRelayBtn(event) {
     await wsMod.setMCURelay(false);
-    let relayStatus = cfgMod.getRelayStatus();
-    uicMod.showPopupDisplay(`Set relay to ${relayStatus}.`);
+    uicMod.showPopupDisplay("Opened relay.");
 }
 
 export function clicktimeBtn(event) {
@@ -81,12 +77,13 @@ export async function clickSaveBtn(event) {
 
 export async function requestStatusInterval() {
     await wsMod.requestMCUStatus();
-    let relayStatus = cfgMod.getRelayStatus();
-    uicMod.refreshRelayDisplay(relayStatus);
+    uicMod.refreshRelayDisplay(cfgMod.getRelayStatus());
 }
 
-export async function requestTimeInterval() {
+export async function requestDateInterval() {
     await wsMod.requestMCUTime();
+    uicMod.refreshDateDisplay(cfgMod.getDateTime());
+    // refreshTimeDisplay();
 }
 
 // refresh all timeslots and display on the webpage
@@ -97,16 +94,11 @@ export function refreshAllTimeslotsDisplay() {
     }
 }
 
-export function refreshTimeDisplayInterval() {
-    let dtnow = cfgMod.getDateTime();
-    let year = dtnow.getFullYear();
-    let month = dtnow.getMonth() + 1;
-    let date = dtnow.getDate();
-    let hours = dtnow.getHours();
-    let minutes = dtnow.getMinutes();
-    let seconds = dtnow.getSeconds();
-    uicMod.setDateDisplay(year, month, date, hours, minutes, seconds);
-}
+// export function refreshTimeDisplay() {
+//     let dtnow = ;
+//     console.log('t');
+//     uicMod.refreshDateDisplay(dtnow);
+// }
 
 export function getInputDate() {
     let userDTStr = $("#userDateTime").val();

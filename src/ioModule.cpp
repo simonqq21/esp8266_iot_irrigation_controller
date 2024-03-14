@@ -1,7 +1,8 @@
 #include <Arduino.h>
 #include "constants.h"
 #include "ioModule.h"
-#include <settingsModule.h>
+#include "settingsModule.h"
+#include "wsModule.h"
 
 // global state variables 
 bool btnState, lastBtnState, trigBtnState, btnPressed; 
@@ -26,13 +27,19 @@ void setRelay(bool relayValue) {
         setLED(LED_BLINK);
         timer = 0;
     }
+    // send status when relay is set manually
+    sendStatus();
 }
 
 // this function must be put in the main loop to control the relay
 void controlRelay() {
     if (millis() - timerStart >= timer) {
+        if (relayState == 1) {
+            sendStatus();
+        }
         relayState = 0;
         setLED(LED_BLINK);
+        // send status when the relay is shut off by timer
     }
     // Serial.print(millis() - timerStart);
     // Serial.print(" >= ");

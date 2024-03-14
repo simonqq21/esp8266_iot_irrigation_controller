@@ -1,6 +1,7 @@
 // let gateway = `ws://${window.location.hostname}:5555/ws`; 
 import * as uicMod from "./uiControllerModule.mjs";
 import * as cfgMod from "./configModule.mjs";
+import * as cbMod from "./callbackModule.mjs";
 
 export let gateway = `ws://192.168.5.75:5555/ws`; 
 export let websocket;
@@ -32,7 +33,7 @@ async function onOpen(event) {
 // runs when websocket closes
 function onClose(event) {
     // alert('Connection closed');
-    setTimeout(initWebSocket, 2000); // restart websocket
+    setTimeout(initWebSocket, 500); // restart websocket
 }
 // runs when websocket receives message from server
 function onMessage(event) {
@@ -42,14 +43,15 @@ function onMessage(event) {
     if (debug) {console.log(msg);}
     // update time
     if (msgType == 'time') {
-        cfgMod.saveDateTime(msg);
-        // receiveTime(msg);     
+        // console.log(`data = ${event.data}`);
+        cfgMod.saveDateTime(msg);   
+        uicMod.refreshDateDisplay(cfgMod.getDateTime());
     }
     // update status 
     else if (msgType == 'status') {
         cfgMod.saveStatus(msg);
-        // console.log(`autoenabled=${JSON.stringify(msg)}`);
-        // receiveStatus(msg);     
+        uicMod.refreshRelayDisplay(cfgMod.getRelayStatus());
+        // console.log(`autoenabled=${JSON.stringify(msg)}`);  
     }
     // update auto enable setting
     else if (msgType == 'auto_enable') {
@@ -57,8 +59,7 @@ function onMessage(event) {
     }
     // update settings
     else if (msgType == 'settings') {
-        cfgMod.saveTimingConfig(msg);
-        // receiveSettings(msg);   
+        cfgMod.saveTimingConfig(msg); 
     }
 } 
 

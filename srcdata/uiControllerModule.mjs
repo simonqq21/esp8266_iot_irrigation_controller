@@ -13,7 +13,6 @@ export function refreshAllElements() {
     refreshGMTOffsetDisplay(cfgMod.getGMTOffset());
     setMaxDurationDisplay(maxDuration);
     refreshMaxDurationDisplay(cfgMod.getDuration());
-    // console.log(`getUseNTP=${cfgMod.getUseNTP()}`);
     refreshNTPDisplay(cfgMod.getUseNTP());
 }
 
@@ -98,11 +97,17 @@ export function setDateFieldValue(date) {
 }
 
 // update time in webpage 
-export function setDateDisplay(year, month, day, hour, minute, second) {
+export function refreshDateDisplay(dateVal) {
+    let year = dateVal.getFullYear();
+    let month = dateVal.getMonth() + 1;
+    let date = dateVal.getDate();
+    let hours = dateVal.getHours();
+    let minutes = dateVal.getMinutes();
+    let seconds = dateVal.getSeconds();
     let timeStr = `${year}/${month.toString().padStart(2, '0')}` +
-    `/${day.toString().padStart(2, '0')} ${hour.toString().padStart(2, '0')}:` +
-    `${minute.toString().padStart(2, '0')}:${second.toString().padStart(2, '0')}`;
-    console.log(timeStr);
+    `/${date.toString().padStart(2, '0')} ${hours.toString().padStart(2, '0')}:` +
+    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    // console.log(timeStr);
     $("#time").text(timeStr);
 }
 

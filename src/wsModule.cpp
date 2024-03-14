@@ -118,7 +118,9 @@ void initWebSocket() {
 
 void sendSystemDateTime() {
 //   checkTime();
-  printRTCTime(dtnow);
+  if (DEBUG) {
+    printRTCTime(dtnow);
+  }
   outputDoc.clear();
   outputDoc["type"] = "time";
   outputDoc["year"] = dtnow.year();
@@ -133,6 +135,7 @@ void sendSystemDateTime() {
 
 // send status update to browser 
 void sendStatus() {
+  Serial.println("status");
   outputDoc.clear();
   outputDoc["type"] = "status";
   outputDoc["relay_status"] = relayState;
