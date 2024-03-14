@@ -36,6 +36,7 @@ export function saveAutoEnable(jsonMsg) {
 
 // save timing config from JSON message
 export function saveTimingConfig(jsonMsg) {
+    // console.log(`savetimingconfig=${JSON.stringify(jsonMsg)}`);
     setTimeslots(jsonMsg.timeslots);
     setDuration(jsonMsg.duration);
     setGMTOffset(jsonMsg.gmt_offset);

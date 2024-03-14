@@ -91,6 +91,8 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
     // save persistent settings to EEPROM 
     else if (commandType == "chg_settings") {
       setTimingConfig();
+      // update NTP with new GMT offset
+      updateNTPTime(); 
       if (DEBUG) {
         Serial.println("set default settings to");
         printConfig();
@@ -151,6 +153,7 @@ void sendAutoEnable() {
 void sendTimingConfig() {
   outputDoc.clear(); 
   outputDoc["type"] = "settings";
+  outputDoc["use_ntp"] = tC.useNTP;
   JsonArray timeslots = outputDoc.createNestedArray("timeslots");
   for (int i=0;i<3;i++) {
     timeslots.add(tC.timeslots[i]);

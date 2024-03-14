@@ -10,6 +10,7 @@
 #include <NTPClient.h> 
 #include <WiFiUdp.h>
 #include <TimeLib.h>
+#include <Wire.h>
 #include "constants.h"
 #include "settingsModule.h"
 #include "timeModule.h"
@@ -133,14 +134,15 @@ void setup() {
   server.begin();
 
   // init RTC 
+  Wire.begin();
   delay(1000);
   while (!rtc.begin()) {
-    Serial.println("Couldn't findfind RTC.");
+    Serial.println("Couldn't find RTC.");
     delay(500);
   }
 
   timeClient.begin();
-  timeClient.setTimeOffset(tC.gmtOffset*3600); // GMT+8
+  
   updateNTPTime(); 
   
   getCurDateTime();

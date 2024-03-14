@@ -27,7 +27,7 @@ async function onOpen(event) {
     await requestMCUAutoEnable();
     await requestMCUStatus();
     await requestMCUTimingConfig();
-    setTimeout(uicMod.refreshAllElements, 120);
+    setTimeout(uicMod.refreshAllElements, 2000);
 }
 // runs when websocket closes
 function onClose(event) {

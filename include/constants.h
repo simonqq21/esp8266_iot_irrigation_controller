@@ -7,9 +7,11 @@
 #define RELAY_PIN 14 // D5 
 #define BUTTON_PIN 0 // D3
 #define LED_PIN 2 // D4
+#define SDA_PIN 4 // D2
+#define SCL_PIN 5 // D1
 
 #define LED_PERIOD 5
-#define LED_DC 0.05
+#define LED_DC 0.1
 
 #define LED_OFF 0
 #define LED_ON 1

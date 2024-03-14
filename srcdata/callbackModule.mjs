@@ -6,6 +6,8 @@ export function changeUseNTP(event) {
     useNTP = $(event.target).prop('checked');
     cfgMod.setUseNTP(useNTP);
     uicMod.refreshNTPDisplay(useNTP);
+    let dtnow = new Date();
+    // uicMod.
 }
 
 export function changeUserDateTime(event) {

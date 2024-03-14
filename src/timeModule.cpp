@@ -18,7 +18,7 @@ DateTime targetTime;
 int _year, _month, _day, _hour, _minute, _second; 
 
 // NTP server 
-long UTCOffsetInSeconds = 28800;
+long UTCOffsetInSeconds;
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "ntp.pagasa.dost.gov.ph"); 
 unsigned long lastTimeRTCUpdated;
@@ -80,6 +80,7 @@ void updateNTPTime() {
     // check if can access NTP server
     timeClient.update();
     bool NTPUpdateStatus = timeClient.isTimeSet(); 
+    timeClient.setTimeOffset(tC.gmtOffset*3600); // GMT+8
     // printNTPTime(timeClient);
     // Serial.print("NTP update status: ");
     // Serial.println(NTPUpdateStatus);
@@ -113,16 +114,18 @@ void adjustRTCWithNTP(NTPClient timeClient, RTC_DS1307 rtc) {
 }
 
 void adjustRTCFromJSON() {
-  _year = inputDoc["year"];
-  _month = inputDoc["month"];
-  _day = inputDoc["day"];
-  _hour = inputDoc["hour"];
-  _minute = inputDoc["minute"];
-  _second = inputDoc["second"];
-  adjustRTC(_year, _month, _day, _hour, _minute, _second);
-  getCurDateTime();
-  Serial.println("chg_time");
-  printRTCTime(dtnow);
+  if (!tC.useNTP) {
+    _year = inputDoc["year"];
+    _month = inputDoc["month"];
+    _day = inputDoc["day"];
+    _hour = inputDoc["hour"];
+    _minute = inputDoc["minute"];
+    _second = inputDoc["second"];
+    adjustRTC(_year, _month, _day, _hour, _minute, _second);
+    getCurDateTime();
+    Serial.println("chg_time");
+    printRTCTime(dtnow);
+  }
 }
 
 void adjustRTC(int _year, int _month, int _day, int _hour, int _minute, int _second) {

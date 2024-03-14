@@ -13,6 +13,8 @@ export function refreshAllElements() {
     refreshGMTOffsetDisplay(cfgMod.getGMTOffset());
     setMaxDurationDisplay(maxDuration);
     refreshMaxDurationDisplay(cfgMod.getDuration());
+    // console.log(`getUseNTP=${cfgMod.getUseNTP()}`);
+    refreshNTPDisplay(cfgMod.getUseNTP());
 }
 
 // refresh the timer enable status on the webpage
@@ -42,12 +44,11 @@ export function refreshRelayDisplay(relayStatus) {
 
 // refresh relay status and display on the webpage
 export function refreshNTPDisplay(useNTP) {
+    $("#useNTP").prop('checked', useNTP);
     if (useNTP) {
-        $("#useNTP").prop('checked', true);
         $("#userDateTimeDiv").hide();
     }
     else {
-        $("#useNTP").prop('checked', false);
         $("#userDateTimeDiv").show();
     }
 }
@@ -82,6 +83,10 @@ export function refreshGMTOffsetDisplay(gmt_offset) {
     $("#GMTOffset").val(gmt_offset);
 }
 // #############################################################################
+
+export function setDateFieldValue() {
+    
+}
 
 // update time in webpage 
 export function setTimeDisplay(year, month, day, hour, minute, second) {
