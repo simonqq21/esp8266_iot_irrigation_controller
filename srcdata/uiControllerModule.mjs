@@ -1,5 +1,5 @@
-import * as cfgMod from "./configModule.mjs";
-import * as cbMod from "./callbackModule.mjs";
+import * as cfgMod from "./cfgMod.mjs";
+import * as cbMod from "./cbMod.mjs";
 
 let maxDuration = 20;
 let popupTimeout;

@@ -7,9 +7,9 @@ Modules:
         the JS code
     
 */
-import * as wsMod from "./websocketModule.mjs";
-import * as uicMod from "./uiControllerModule.mjs";
-import * as cbMod from "./callbackModule.mjs";
+import * as wsMod from "./wsMod.mjs";
+import * as uicMod from "./uicMod.mjs";
+import * as cbMod from "./cbMod.mjs";
 
 $(document).ready(async function() {
     uicMod.createTimeslotButtons();

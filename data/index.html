@@ -5,9 +5,10 @@
     <title>ESP8266 IoT Irrigation Controller Web Interface</title>
     <link rel="stylesheet" href="styles.css">
 
+    
     <script type="text/javascript" src="jquery.js"></script>
-    <!-- <script type="text/javascript" src="script.js"></script> -->
-    <script type="text/javascript" src="s.js"></script>
+    <!-- <script type="module" src="script.js"></script> -->
+    <script type="module" src="s.js"></script>
 </head>
 <body>
     <header>
@@ -15,11 +16,21 @@
             <h1>ESP8266 IoT Irrigation Controller Web Interface</h1>
             <div id="timeDiv" style="margin: 10px;">
                 <span>System time: </span>
-                <span id="time">2024/03/05 07:00:00</span>
+                <span id="time">2024/03/05 07:00:00</span>               
             </div>
         </div>
     </header>
     
+    <div id="timeSettingsDiv">
+        <div id="useNTPDiv">
+            <label for="useNTP">Set time automatically: </label>
+            <input type="checkbox" name="useNTP" id="useNTP">
+        </div>
+        <div id="userDateTimeDiv">
+            <label for="userDateTime">Set time manually: </label>
+            <input type="datetime-local" name="userDateTime" id="userDateTime" step="1">
+        </div>
+    </div>
     
     <div id="masterSwitchDiv">
         <label for="timerEnable">Enable timer: </label>

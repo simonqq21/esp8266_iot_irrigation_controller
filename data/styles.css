@@ -1,10 +1,13 @@
 * {
     font-family:Arial, Helvetica, sans-serif;
 }
+div {
+    padding: 0.5vh;
+}
 div:not(div > div) {
-        /* background-color: green;
-        margin: 30px; */
-    margin: 0px 10px 10px;
+        /* background-color: green; */
+        /* margin: 30px; */
+    /* margin: 0px 10px 10px; */
 }
 
 #popup { 

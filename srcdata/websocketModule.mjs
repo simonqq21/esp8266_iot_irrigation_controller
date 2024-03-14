@@ -1,7 +1,7 @@
 // let gateway = `ws://${window.location.hostname}:5555/ws`; 
-import * as uicMod from "./uiControllerModule.mjs";
-import * as cfgMod from "./configModule.mjs";
-import * as cbMod from "./callbackModule.mjs";
+import * as uicMod from "./uicMod.mjs";
+import * as cfgMod from "./cfgMod.mjs";
+import * as cbMod from "./cbMod.mjs";
 
 export let gateway = `ws://192.168.5.75:5555/ws`; 
 export let websocket;

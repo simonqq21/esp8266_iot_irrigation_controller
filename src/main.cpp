@@ -132,15 +132,15 @@ void setup() {
     request->send(LittleFS, "/jquery.js", "text/javascript", false);});
 
   server.on("/s.js", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(LittleFS, "/s.js", "module", false);});
+    request->send(LittleFS, "/s.js", "text/javascript", false);});
   server.on("/wsMod.mjs", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(LittleFS, "/wsMod.mjs", "module", false);});
+    request->send(LittleFS, "/wsMod.mjs", "text/javascript", false);});
   server.on("/cfgMod.mjs", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(LittleFS, "/cfgMod.mjs", "module", false);});
+    request->send(LittleFS, "/cfgMod.mjs", "text/javascript", false);});
   server.on("/uicMod.mjs", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(LittleFS, "/uicMod.mjs", "module", false);});
+    request->send(LittleFS, "/uicMod.mjs", "text/javascript", false);});
   server.on("/cbMod.mjs", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(LittleFS, "/cbMod.mjs", "module", false);});
+    request->send(LittleFS, "/cbMod.mjs", "text/javascript", false);});
 
   server.begin();
 
