@@ -105,7 +105,7 @@ export function refreshTimeDisplayInterval() {
     let hours = dtnow.getHours();
     let minutes = dtnow.getMinutes();
     let seconds = dtnow.getSeconds();
-    uicMod.setTimeDisplay(year, month, date, hours, minutes, seconds);
+    uicMod.setDateDisplay(year, month, date, hours, minutes, seconds);
 }
 
 export function getInputDate() {

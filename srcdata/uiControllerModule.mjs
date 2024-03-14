@@ -49,6 +49,8 @@ export function refreshNTPDisplay(useNTP) {
         $("#userDateTimeDiv").hide();
     }
     else {
+        let now = new Date();
+        setDateFieldValue(now);
         $("#userDateTimeDiv").show();
     }
 }
@@ -84,12 +86,19 @@ export function refreshGMTOffsetDisplay(gmt_offset) {
 }
 // #############################################################################
 
-export function setDateFieldValue() {
-    
+// set the values of the date adjustment field 
+export function setDateFieldValue(date) {
+    let dateStr = date.getFullYear() + '-' +
+        (date.getMonth()+1).toString().padStart(2, '0') + '-' +
+        (date.getDate()).toString().padStart(2, '0') + 'T' + 
+        (date.getHours()).toString().padStart(2, '0') + ':' +
+        (date.getMinutes()).toString().padStart(2, '0') + ':' +
+        (date.getSeconds()).toString().padStart(2, '0');
+    $("#userDateTime").val(dateStr);
 }
 
 // update time in webpage 
-export function setTimeDisplay(year, month, day, hour, minute, second) {
+export function setDateDisplay(year, month, day, hour, minute, second) {
     let timeStr = `${year}/${month.toString().padStart(2, '0')}` +
     `/${day.toString().padStart(2, '0')} ${hour.toString().padStart(2, '0')}:` +
     `${minute.toString().padStart(2, '0')}:${second.toString().padStart(2, '0')}`;
