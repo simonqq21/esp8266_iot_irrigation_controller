@@ -13,6 +13,7 @@
 void printTime(int year, int month, int day, int hour, int minute, int second);
 void printRTCTime(DateTime datetime); 
 void printNTPTime(NTPClient timeClient);
+void initTime();
 void updateNTPTime();
 void adjustRTCWithNTP(NTPClient timeClient, RTC_DS1307 rtc);
 void adjustRTCFromJSON();

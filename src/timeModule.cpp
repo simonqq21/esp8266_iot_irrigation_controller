@@ -71,6 +71,20 @@ void printNTPTime(NTPClient timeClient) {
   // Serial.println();
 }
 
+void initTime() {
+  // init RTC 
+  Wire.begin();
+  while (!rtc.begin()) {
+    Serial.println("Couldn't find RTC.");
+    delay(500);
+  }
+
+  timeClient.begin();
+  updateNTPTime(); 
+  getCurDateTime();
+  printRTCTime(dtnow);
+}
+
 /*
 Update the RTC and local time with NTP time only if the ESP can connect to the 
 NTP server

@@ -3,6 +3,7 @@
 #include "constants.h"
 #include "ioModule.h"
 #include "timeModule.h"
+#include "wifiModule.h"
 
 extern DateTime dtnow; 
 
@@ -16,6 +17,8 @@ char strData[150];
 extern bool autoEnabled;
 extern bool relayState;
 extern timingconfig tC;
+
+extern AsyncWebHandler wifiGetHandler, wifiPostHandler; 
 
 // run everytime new data is received from the websocket
 void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type,
@@ -110,8 +113,39 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
   }
 }
 
+void initServer() {
+  // route for root web page 
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(LittleFS, "/index.html", String(), false);});
+  server.on("/styles.css", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(LittleFS, "/styles.css", "text/css", false);});
+
+  server.on("/jquery.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(LittleFS, "/jquery.js", "text/javascript", false);});
+
+  server.on("/s.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(LittleFS, "/s.js", "text/javascript", false);});
+  server.on("/wsMod.mjs", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(LittleFS, "/wsMod.mjs", "text/javascript", false);});
+  server.on("/cfgMod.mjs", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(LittleFS, "/cfgMod.mjs", "text/javascript", false);});
+  server.on("/uicMod.mjs", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(LittleFS, "/uicMod.mjs", "text/javascript", false);});
+  server.on("/cbMod.mjs", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(LittleFS, "/cbMod.mjs", "text/javascript", false);});
+  wifiGetHandler = server.on("/wifi", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(LittleFS, "/wifi.html", String(), false);});
+  wifiPostHandler = server.on("/wifi", HTTP_POST, [](AsyncWebServerRequest *request) {
+    saveWiFi(request);
+  });
+  // initialize websocket 
+  initWebSocket(); 
+  server.begin();
+}
+
 // initialize the websocket 
 void initWebSocket() {
+  Serial.println("initialized ws");
   ws.onEvent(onEvent);
   server.addHandler(&ws);
 }
