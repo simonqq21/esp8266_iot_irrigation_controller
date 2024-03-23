@@ -16,6 +16,7 @@
 #include "timeModule.h"
 #include "ioModule.h"
 #include "wsModule.h"
+#include "wifiModule.h"
 
 /*
 settingsModule - getting and setting persistent settings to and from EEPROM
@@ -40,8 +41,14 @@ extern DateTime dtnow;
 extern long UTCOffsetInSeconds;
 extern NTPClient timeClient; 
 
+// webserver
 extern AsyncWebServer server; 
 extern AsyncWebSocket ws; 
+
+// wifi 
+extern unsigned long checkAddr, ssidAddr, passAddr, ipIndexAddr;
+extern int checkNum; 
+extern String ssid, pass;
 
 // // string array of days of the week
 // String daysOfTheWeek[7] = {
@@ -53,19 +60,6 @@ extern AsyncWebSocket ws;
 //   "Saturday", 
 //   "Sunday"
 // };
-
-// wifi credentials
-#define LOCAL_SSID "wifi"
-#define LOCAL_PASS "password"
-#define LOCAL_SSID "QUE-STARLINK"
-#define LOCAL_PASS "Quefamily01259"
-
-//static IP address configuration 
-IPAddress local_IP(192,168,5,75);
-IPAddress gateway(192,168,5,1);
-IPAddress subnet(255,255,255,0);
-IPAddress primaryDNS(8,8,8,8);
-IPAddress secondaryDNS(8,8,4,4);
 
 //for littlefs
 File indexPage;  
@@ -80,16 +74,21 @@ void setup() {
     Serial.println("An error occured while mounting LittleFS.");
   }
 
+  // calculate EEPROM addresses 
+  checkAddr = START_ADDR;
+  ssidAddr = checkAddr + sizeof(int);
+  passAddr = ssidAddr + sizeof(char) * 32;
+  ipIndexAddr = passAddr + sizeof(char) * 32;
+  configAddr = ipIndexAddr + sizeof(int);
+  autoEnableAddr = configAddr + sizeof(timingconfig);
+
   // initialize the emulated EEPROM as large as needed
-  int EEPROMSize = sizeof(timingconfig) + sizeof(bool) * 2;
+  int EEPROMSize = sizeof(int) + 2 * sizeof(char) * 32 + sizeof(int) + 
+    sizeof(timingconfig) + sizeof(bool);
   EEPROM.begin(EEPROMSize);
 
   // testing
   // setTimingConfig();
-
-  // calculate EEPROM addresses 
-  configAddr = STARTING_ADDR;
-  autoEnableAddr = configAddr + sizeof(timingconfig);
   
   // load previous timing configuration from EEPROM if it exists
   getConfig();
@@ -106,55 +105,17 @@ void setup() {
   setLED(LED_BLINK);
 
   // WiFi
+  getWiFiEEPROMValid();
+  checkResetButton(BUTTON_PIN);
+  Serial.print(checkNum); 
+  validateWiFiEEPROM();
+
   Serial.print("Connecting to "); 
-  Serial.println(LOCAL_SSID);
-  if (!WiFi.config(local_IP, gateway, subnet, primaryDNS, secondaryDNS)) {
-    Serial.println("Station failed to configure.");
-  }
-  WiFi.begin(LOCAL_SSID, LOCAL_PASS); 
-  // while (WiFi.status() != WL_CONNECTED) {
-  //   delay(500); 
-  //   Serial.print(".");
+  Serial.println(ssid);
+  // if (!WiFi.config(local_IP, gateway, subnet, primaryDNS, secondaryDNS)) {
+  //   Serial.println("Station failed to configure.");
   // }
-  //  print local IP address and start web server 
-  printWiFi();
-
-  // initialize websocket 
-  initWebSocket(); 
-
-  // route for root web page 
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(LittleFS, "/index.html", String(), false);});
-  server.on("/styles.css", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(LittleFS, "/styles.css", "text/css", false);});
-
-  server.on("/jquery.js", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(LittleFS, "/jquery.js", "text/javascript", false);});
-
-  server.on("/s.js", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(LittleFS, "/s.js", "text/javascript", false);});
-  server.on("/wsMod.mjs", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(LittleFS, "/wsMod.mjs", "text/javascript", false);});
-  server.on("/cfgMod.mjs", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(LittleFS, "/cfgMod.mjs", "text/javascript", false);});
-  server.on("/uicMod.mjs", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(LittleFS, "/uicMod.mjs", "text/javascript", false);});
-  server.on("/cbMod.mjs", HTTP_GET, [](AsyncWebServerRequest *request) {
-    request->send(LittleFS, "/cbMod.mjs", "text/javascript", false);});
-
-  server.begin();
-
-  // init RTC 
-  Wire.begin();
-  while (!rtc.begin()) {
-    Serial.println("Couldn't find RTC.");
-    delay(500);
-  }
-
-  timeClient.begin();
-  updateNTPTime(); 
-  getCurDateTime();
-  printRTCTime(dtnow);
+  WiFi.begin(ssid, pass); 
 
   // File file = LittleFS.open("/index.html", "r");
   // if(!file){
@@ -169,6 +130,7 @@ void setup() {
 }
 
 void loop() {
+  checkWiFiLoop();
   // websocket loop
   ws.cleanupClients();
   // IO functions
