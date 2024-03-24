@@ -11,6 +11,7 @@
 #include <WiFiUdp.h>
 #include <TimeLib.h>
 #include <Wire.h>
+#include <ArduinoOTA.h>
 #include "constants.h"
 #include "settingsModule.h"
 #include "timeModule.h"
@@ -68,7 +69,7 @@ void printWiFi();
 
 void setup() {
   Serial.begin(115200); 
-  
+  Serial.println("Updated from ArduinoOTA");
   // littleFS 
   if (!LittleFS.begin()) {
     Serial.println("An error occured while mounting LittleFS.");
