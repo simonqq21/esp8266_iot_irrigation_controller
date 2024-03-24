@@ -7,7 +7,7 @@ import * as uicMod from "./uicMod.mjs";
 import * as cfgMod from "./cfgMod.mjs";
 
 export function changeUseNTP(event) {
-    useNTP = $(event.target).prop('checked');
+    let useNTP = $(event.target).prop('checked');
     cfgMod.setUseNTP(useNTP);
     uicMod.refreshNTPDisplay(useNTP);
 }

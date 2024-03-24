@@ -4,7 +4,7 @@
 import * as uicMod from "./uicMod.mjs";
 import * as cfgMod from "./cfgMod.mjs";
 
-// export let gateway = `ws://192.168.5.10:5555/ws`; 
+// export let gateway = `ws://192.168.5.13:5555/ws`; 
 export let gateway = `ws://${window.location.hostname}:5555/ws`; 
 export let websocket;
 export let debug = false; 
@@ -26,6 +26,7 @@ export async function initWebSocket() {
 // runs when websocket opens
 async function onOpen(event) {
     // grab the settings from the MCU, then refresh the webpage elements.
+    uicMod.refreshNTPDisplay(cfgMod.getUseNTP());
     await requestMCUTime();
     await requestMCUAutoEnable();
     await requestMCUStatus();

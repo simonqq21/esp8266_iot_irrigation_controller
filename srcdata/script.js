@@ -23,7 +23,10 @@ $(document).ready(async function() {
 
     // set the callback functions here 
     // toggle NTP 
-    $("#useNTP").on('change', function(event) {
+    // $("#useNTP").on('change', function(event) {
+    //     cbMod.changeUseNTP(event);
+    // });
+    $("#useNTP").change(function(event) {
         cbMod.changeUseNTP(event);
     });
     // set user date and time to ESP8266
