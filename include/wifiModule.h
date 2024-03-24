@@ -4,6 +4,8 @@
 #include <ESP8266WiFi.h>
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
+#include <WiFiUdp.h>
+#include <ArduinoOTA.h>
 #include <LittleFS.h> 
 #include <EEPROM.h>
 #include "wsModule.h"
@@ -11,6 +13,7 @@
 #define START_ADDR 0x0
 #define BTN1 D3
 
+void startOTAHandler();
 void writeStrToEEPROM(unsigned int addr, String str);
 void readStrFromEEPROM(unsigned int addr, String *str);
 void getWiFiEEPROMValid();
