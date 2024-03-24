@@ -79,3 +79,7 @@ button {
     background-color: #ff0000;
 }
 
+.invisible {
+    display: none;
+    visibility: hidden;
+}

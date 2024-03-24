@@ -49,11 +49,13 @@ export function refreshNTPDisplay(useNTP) {
     $("#useNTP").prop('checked', useNTP);
     if (useNTP) {
         $("#userDateTimeDiv").hide();
+        // $("#userDateTimeDiv").addClass("invisible");
     }
     else {
         let now = new Date();
         setDateFieldValue(now);
         $("#userDateTimeDiv").show();
+        // $("#userDateTimeDiv").removeClass("invisible");
     }
 }
 
