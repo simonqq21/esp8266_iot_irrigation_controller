@@ -14,6 +14,7 @@ export function refreshAllElements() {
     cbMod.refreshAllTimeslotsDisplay();
     refreshDurationDisplay(cfgMod.getDuration());
     refreshGMTOffsetDisplay(cfgMod.getGMTOffset());
+    maxDuration = cfgMod.getDuration();
     setMaxDurationDisplay(maxDuration);
     refreshMaxDurationDisplay(cfgMod.getDuration());
     refreshNTPDisplay(cfgMod.getUseNTP());
